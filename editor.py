@@ -52,7 +52,7 @@ class Editor:
         
     def run(self):
         while True: 
-            
+             
             self.display.fill((0, 0, 0))
             
             self.scroll[0] += (self.movement[1] - self.movement[0]) * 2
@@ -134,6 +134,8 @@ class Editor:
                         self.ongrid = not self.ongrid
                     if event.key == pygame.K_o:
                         self.tilemap.save('map.json')
+                    if event.key == pygame.K_t:
+                        self.tilemap.autotile()
                         
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_a:
