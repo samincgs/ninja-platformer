@@ -11,10 +11,10 @@ class Game:
         pygame.init()
 
         # main screen
-        self.screen = pygame.display.set_mode((640, 480))
+        self.screen = pygame.display.set_mode((1080, 640))
         
         # display screen made to enlarge the pixels of the entities/tiles
-        self.display = pygame.Surface((320, 240))
+        self.display = pygame.Surface((540, 320))
         
         pygame.display.set_caption('ninja platformer')
 
@@ -26,8 +26,9 @@ class Game:
             'grass': load_images('tiles/grass'),
             'stone': load_images('tiles/stone'),
             'decor': load_images('tiles/decor'),
+            'spawners': load_images('tiles/spawners'),
             'large_decor': load_images('tiles/large_decor'),
-            'background': load_image('background.png'),
+            'background': load_image('background1.png'),
             'clouds' : load_images('clouds'),
             'player/idle' : Animation(load_images('entities/player/idle'), img_dur=6),
             'player/run' : Animation(load_images('entities/player/run'), img_dur=4),
@@ -53,6 +54,12 @@ class Game:
         self.leaf_spawners = []
         for tree in self.tilemap.extract([('large_decor', 2)], keep=True):
             self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13))
+        
+        for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)], keep=True):
+            if spawner['variant'] == 0:
+                self.player.pos = spawner['pos']
+            else:
+                print(spawner['pos'], 'enemy')
         
         self.particles = []
         

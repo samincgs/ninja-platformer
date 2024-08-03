@@ -10,10 +10,10 @@ class Editor:
 
         pygame.display.set_caption('editor')
         # main screen
-        self.screen = pygame.display.set_mode((640, 480))
+        self.screen = pygame.display.set_mode((720, 480))
         
         # display screen made to enlarge the pixels of the entities/tiles
-        self.display = pygame.Surface((320, 240))
+        self.display = pygame.Surface((360, 240))
         
         self.clock = pygame.time.Clock()
          
@@ -23,6 +23,7 @@ class Editor:
             'stone': load_images('tiles/stone'),
             'decor': load_images('tiles/decor'),
             'large_decor': load_images('tiles/large_decor'),
+            'spawners': load_images('tiles/spawners')
         }
         
         
