@@ -5,6 +5,7 @@ from scripts.utils import load_image, load_images, Animation
 from scripts.tilemap import Tilemap
 from scripts.clouds import Clouds
 from scripts.particle import Particle
+from scripts.spark import Spark
 
 class Game:
     def __init__(self):
@@ -49,10 +50,18 @@ class Game:
         
         # tilemap
         self.tilemap = Tilemap(self, tile_size=16)
-        self.tilemap.load('map.json')
+        self.load_level(0)
         
-        # camera
+       
+    
+    def load_level(self, map_id):
+        self.tilemap.load('data/maps/' + str(map_id) + '.json')
+        
+         # camera
         self.scroll = [0, 0]
+        self.projectiles = []
+        self.particles = []
+        self.sparks = []
         
         
         self.leaf_spawners = []
@@ -65,10 +74,7 @@ class Game:
                 self.player.pos = spawner['pos']
             else:
                 self.enemies.append(Enemy(self, spawner['pos'], (8, 15)))
-        
-        self.projectiles = []
-        self.particles = []
-        
+      
     def run(self):
         while True: 
             
@@ -105,13 +111,26 @@ class Game:
                 self.display.blit(img, (projectile[0][0] - img.get_width() / 2 - render_scroll[0], projectile[0][1] - img.get_height() / 2 - render_scroll[1]))
                 if self.tilemap.solid_check(projectile[0]):
                     self.projectiles.remove(projectile)
+                    for i in range(4):
+                        self.sparks.append(Spark(projectile[0], random() - 0.5 + (math.pi if projectile[1] > 0 else 0), 2 + random()))
                 elif projectile[2] > 360:
                     self.projectiles.remove(projectile)
                 elif abs(self.player.dashing) < 50:
                     if self.player.rect().collidepoint(projectile[0]):
                         self.projectiles.remove(projectile)
+                        for i in range(30):
+                            angle = random() * math.pi * 2
+                            speed = random() * 5
+                            self.sparks.append(Spark(self.player.rect().center, angle, 2 + random()))
+                            self.particles.append(Particle(self, 'particle', self.player.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=randint(0, 7)))
+                            
                     
                 
+            for spark in self.sparks.copy():
+                kill = spark.update()
+                spark.render(self.display, offset=render_scroll)
+                if kill:
+                    self.sparks.remove(spark)
             
             for particle in self.particles.copy():
                 kill = particle.update()

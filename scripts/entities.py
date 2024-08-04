@@ -1,6 +1,7 @@
 import pygame, math
 from random import random, randint
 from scripts.particle import Particle
+from scripts.spark import Spark
 
 class PhysicsEntity:
     def __init__(self, game, e_type, pos, size):
@@ -94,8 +95,12 @@ class Enemy(PhysicsEntity):
                 if (abs(dis[1]) < 16):
                     if (self.flip and dis[0] < 0):
                         self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery], -1.5, 0])
+                        for i in range(4):
+                            self.game.sparks.append(Spark(self.game.projectiles[-1][0], random() - 0.5 + math.pi, 2 + random()))
                     if (not self.flip and dis[0] > 0):
                         self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery], 1.5, 0])
+                        for i in range(4):
+                            self.game.sparks.append(Spark(self.game.projectiles[-1][0], random() - 0.5, 2 + random()))
                     
         elif random() < 0.01:
             self.walking = randint(30, 120)
@@ -119,7 +124,7 @@ class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
         super().__init__(game, 'player', pos, size)
         self.air_time = 0
-        self.jumps = 2
+        self.jumps = 1
         self.wall_slide = False
         self.dashing = 0
     
@@ -130,7 +135,7 @@ class Player(PhysicsEntity):
         
         if self.collisions['down']: 
             self.air_time = 0
-            self.jumps = 2
+            self.jumps = 1
         
         self.wall_slide = False
         if (self.collisions['right'] or self.collisions['left']) and self.air_time > 4:
