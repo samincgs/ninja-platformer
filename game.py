@@ -52,6 +52,8 @@ class Game:
         self.tilemap = Tilemap(self, tile_size=16)
         self.load_level(0)
         
+        
+        
        
     
     def load_level(self, map_id):
@@ -63,6 +65,8 @@ class Game:
         self.particles = []
         self.sparks = []
         
+        # timer for restart game
+        self.dead = 0
         
         self.leaf_spawners = []
         for tree in self.tilemap.extract([('large_decor', 2)], keep=True):
@@ -79,6 +83,11 @@ class Game:
         while True: 
             
             self.display.blit(self.assets['background'], (0, 0))
+            
+            if self.dead:
+                self.dead += 1
+                if self.dead > 40:
+                    self.load_level(0)
             
             # camera
             self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 30
@@ -102,8 +111,9 @@ class Game:
                 if kill:
                     self.enemies.remove(enemy)
             
-            self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
-            self.player.render(self.display, offset=render_scroll)
+            if not self.dead:
+                self.player.update(self.tilemap, ((self.movement[1] - self.movement[0]), 0))
+                self.player.render(self.display, offset=render_scroll)
             
             # [[x, y], direction, timer]
             for projectile in self.projectiles.copy():
@@ -120,6 +130,7 @@ class Game:
                 elif abs(self.player.dashing) < 50:
                     if self.player.rect().collidepoint(projectile[0]):
                         self.projectiles.remove(projectile)
+                        self.dead += 1
                         for i in range(30):
                             angle = random() * math.pi * 2
                             speed = random() * 5

@@ -32,7 +32,7 @@ class PhysicsEntity:
         
         frame_movement = (movement[0] + self.velocity[0], movement[1] + self.velocity[1])
         
-        self.pos[0] += frame_movement[0]
+        self.pos[0] += frame_movement[0] 
         entity_rect = self.rect()
         for rect in tilemap.physics_rects_around(self.pos):
             if entity_rect.colliderect(rect):
@@ -44,7 +44,7 @@ class PhysicsEntity:
                     self.collisions['left'] = True
                 self.pos[0] = entity_rect.x
  
-        self.pos[1] += frame_movement[1]
+        self.pos[1] += frame_movement[1] 
         entity_rect = self.rect()
         for rect in tilemap.physics_rects_around(self.pos):
             if entity_rect.colliderect(rect):
