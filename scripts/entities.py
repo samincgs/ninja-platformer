@@ -89,6 +89,14 @@ class Enemy(PhysicsEntity):
             else:
                 self.flip = not self.flip
             self.walking = max(0, self.walking - 1)
+            if not self.walking:
+                dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
+                if (abs(dis[1]) < 16):
+                    if (self.flip and dis[0] < 0):
+                        self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery], -1.5, 0])
+                    if (not self.flip and dis[0] > 0):
+                        self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery], 1.5, 0])
+                    
         elif random() < 0.01:
             self.walking = randint(30, 120)
         
@@ -111,7 +119,7 @@ class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
         super().__init__(game, 'player', pos, size)
         self.air_time = 0
-        self.jumps = 1
+        self.jumps = 2
         self.wall_slide = False
         self.dashing = 0
     
@@ -122,7 +130,7 @@ class Player(PhysicsEntity):
         
         if self.collisions['down']: 
             self.air_time = 0
-            self.jumps = 1
+            self.jumps = 2
         
         self.wall_slide = False
         if (self.collisions['right'] or self.collisions['left']) and self.air_time > 4:
