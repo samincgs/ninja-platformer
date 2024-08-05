@@ -56,7 +56,7 @@ class Game:
         self.sfx['jump'].set_volume(0.08)
         self.sfx['shoot'].set_volume(0.1)
         self.sfx['hit'].set_volume(0.2)
-        self.sfx['dash'].set_volume(0.04)
+        self.sfx['dash'].set_volume(0.02)
         self.sfx['ambience'].set_volume(0.02)
         
         self.clouds = Clouds(self.assets['clouds'], count=16)
