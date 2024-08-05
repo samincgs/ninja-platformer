@@ -144,7 +144,6 @@ class Player(PhysicsEntity):
         super().update(tilemap, movement=movement)
          
         self.air_time += 1
-        print(self.air_time)
         
         if self.air_time > 120:
             self.game.dead = 1            
