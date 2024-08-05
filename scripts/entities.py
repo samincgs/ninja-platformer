@@ -144,6 +144,7 @@ class Player(PhysicsEntity):
         super().update(tilemap, movement=movement)
          
         self.air_time += 1
+        print(self.air_time)
         
         if self.air_time > 120:
             self.game.dead = 1            
@@ -158,8 +159,10 @@ class Player(PhysicsEntity):
             self.velocity[1] = min(self.velocity[1], 0.5) # slowly sliding down the wall
             if self.collisions['right']:
                 self.flip = False
+                self.air_time = 4
             else:
                 self.flip = True
+                self.air_time = 4
             self.set_action('wall_slide')
         
         if not self.wall_slide:
