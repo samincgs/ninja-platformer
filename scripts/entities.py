@@ -32,7 +32,7 @@ class PhysicsEntity:
         
         frame_movement = (movement[0] + self.velocity[0], movement[1] + self.velocity[1])
         
-        self.pos[0] += frame_movement[0] 
+        self.pos[0] += frame_movement[0]
         entity_rect = self.rect()
         for rect in tilemap.physics_rects_around(self.pos):
             if entity_rect.colliderect(rect):
@@ -114,6 +114,7 @@ class Enemy(PhysicsEntity):
             
         if abs(self.game.player.dashing) >= 50:
             if self.rect().colliderect(self.game.player.rect()):
+                self.game.screenshake = max(16, self.game.screenshake)
                 for i in range(30):
                     angle = random() * math.pi * 2
                     speed = random() * 5
@@ -143,6 +144,9 @@ class Player(PhysicsEntity):
         super().update(tilemap, movement=movement)
          
         self.air_time += 1
+        
+        if self.air_time > 120:
+            self.game.dead = 1            
         
         if self.collisions['down']: 
             self.air_time = 0
