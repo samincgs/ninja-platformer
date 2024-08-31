@@ -11,12 +11,13 @@ class Game:
         pygame.init()
 
         #displays
-        self.screen = pygame.display.set_mode(((640, 480))) #main screen
+        self.screen = pygame.display.set_mode(((640, 480))) # main screen
         self.display = pygame.Surface((320, 240)) #display screen
         
         pygame.display.set_caption('ninja platformer')
         
         self.clock = pygame.time.Clock()
+        
         
         self.assets = { # all assets loaded in using utils
             'background': load_image('background.png'),
@@ -27,7 +28,7 @@ class Game:
             'player': load_image('entities/player.png'),
             'clouds': load_images('clouds'),
             'player/idle': Animation(load_images('entities/player/idle'), img_dur=6),
-            'player/run': Animation(load_images('entities/player/run'), img_dur=4),
+            'player/run': Animation(load_images('entities/player/run'), img_dur=6,),
             'player/jump': Animation(load_images('entities/player/jump')),
             'player/slide': Animation(load_images('entities/player/slide')),
             'player/wall_slide': Animation(load_images('entities/player/wall_slide')),  
@@ -35,7 +36,7 @@ class Game:
         
         self.movement = [False, False]
         
-        self.clouds = Clouds(self.assets['clouds'], count= 16)
+        self.clouds = Clouds(self.assets['clouds'], count=20)
         
         self.player = Player(self, (50, 50), self.assets['player'].get_size())
         
@@ -47,10 +48,11 @@ class Game:
         while True:
             
             self.display.blit(self.assets['background'], (0, 0))
-            
+                        
             #camera
             self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 30
             self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 30
+            
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
 
             self.clouds.update()

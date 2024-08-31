@@ -10,7 +10,7 @@ class PhysicsEntity:
         self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
         
         self.action = ''
-        self.anim_offset = (-3, -1)
+        self.anim_offset = (-3, -2) 
         self.flip = False
         self.set_action('idle')
         
@@ -68,7 +68,7 @@ class PhysicsEntity:
         
         
     def render(self, surf, offset=(0, 0)):
-        surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1])) # add back anim offset TODO
+        surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1])) 
         # surf.blit(self.game.assets['player'], (self.pos[0] - offset[0], self.pos[1] - offset[1]))
         
 class Player(PhysicsEntity):
@@ -82,7 +82,7 @@ class Player(PhysicsEntity):
         self.air_time += 1
         
         if self.collisions['down']:
-            self.air_time = 0
+            self.air_time = 0   
             
         if self.air_time > 4:
             self.set_action('jump')

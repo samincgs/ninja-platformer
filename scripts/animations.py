@@ -1,7 +1,5 @@
-import pygame
-
 class Animation:
-    def __init__(self, images, img_dur = 5, loop = True):
+    def __init__(self, images, img_dur=5,loop=True):
         self.images = images
         self.loop= loop
         self.img_duration = img_dur
