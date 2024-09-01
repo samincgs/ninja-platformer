@@ -23,7 +23,6 @@ class LevelEditor:
             'large_decor': load_images('tiles/large_decor'),
         }
         
-        
         self.movement = [False, False, False, False]
         
         self.tilemap = Tilemap(self, tile_size=16)
@@ -39,12 +38,16 @@ class LevelEditor:
         self.shift = False
         
         self.ongrid = True
+        
+        try:
+            self.tilemap.load('map.json')
+        except FileNotFoundError:
+            pass
 
     def run(self):
         while True:
             
             self.display.fill((0, 0, 0))
-            
             
             self.scroll[0] += (self.movement[1] - self.movement[0]) * 3
             self.scroll[1] += (self.movement[3] - self.movement[2]) * 3
@@ -124,6 +127,8 @@ class LevelEditor:
                         self.shift = True
                     if event.key == pygame.K_g:
                         self.ongrid = not self.ongrid
+                    if event.key == pygame.K_o: # use o for output
+                        self.tilemap.save('map.json')
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_a:
                         self.movement[0] = False

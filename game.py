@@ -18,7 +18,6 @@ class Game:
         
         self.clock = pygame.time.Clock()
         
-        
         self.assets = { # all assets loaded in using utils
             'background': load_image('background.png'),
             'grass': load_images('tiles/grass'),
@@ -43,6 +42,8 @@ class Game:
         self.tilemap = Tilemap(self, tile_size=16)
         
         self.scroll = [0, 0]
+        
+        
 
     def run(self):
         while True:
