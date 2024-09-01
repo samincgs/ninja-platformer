@@ -43,7 +43,6 @@ class LevelEditor:
     def run(self):
         while True:
             
-            print(self.ongrid)
             self.display.fill((0, 0, 0))
             
             
@@ -58,24 +57,32 @@ class LevelEditor:
             
             mpos = pygame.mouse.get_pos()
             mpos = (mpos[0] / RENDER_SCALE, mpos[1] / RENDER_SCALE)
-            tile_pos = (int((mpos[0] + self.scroll[0]) // self.tilemap.tile_size), int((mpos[1] + self.scroll[1]) // self.tilemap.tile_size)) # diving by tilsize makes it snap to the grid 
+            tile_pos = (int((mpos[0] + self.scroll[0]) // self.tilemap.tile_size), int((mpos[1] + self.scroll[1]) // self.tilemap.tile_size)) # dividng by tilesize makes it snap to the grid 
             
             if self.ongrid:
                 # see where the next tile would be placed
                 self.display.blit(current_tile_img, (tile_pos[0] * self.tilemap.tile_size - self.scroll[0], tile_pos[1] * self.tilemap.tile_size - self.scroll[1]))
+            else:
+                self.display.blit(current_tile_img, mpos)
             
             # place a block on the grid
-            if self.clicking:
+            if self.clicking and self.ongrid:
                 self.tilemap.tilemap[str(tile_pos[0]) + ';' + str(tile_pos[1])] = {'type': self.tile_list[self.tile_group], 'variant': self.tile_variant, 'pos': tile_pos}
             # remove an existing block on the grid
             if self.right_clicking:
-                tile_loc = str(tile_pos[0]) + ';' + str(tile_pos[1])
-                if tile_loc in self.tilemap.tilemap:
-                    del self.tilemap.tilemap[tile_loc]
-            
+                if self.ongrid: # remove tiles when they are placed on the grid
+                    tile_loc = str(tile_pos[0]) + ';' + str(tile_pos[1])
+                    if tile_loc in self.tilemap.tilemap:
+                        del self.tilemap.tilemap[tile_loc]
+                else: # remove tiles when they are placed offgrid
+                    for tile in self.tilemap.offgrid_tiles.copy():
+                        tile_img = self.assets[tile['type']][tile['variant']]
+                        tile_r = pygame.Rect(tile['pos'][0] - self.scroll[0], tile['pos'][1] - self.scroll[1], tile_img.get_width(), tile_img.get_height())
+                        if tile_r.collidepoint(mpos):
+                            self.tilemap.offgrid_tiles.remove(tile)
+        
             self.display.blit(current_tile_img, (5, 5))
             
-          
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -83,6 +90,8 @@ class LevelEditor:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.clicking = True
+                        if not self.ongrid: # to make sure the object is only placed once per click instead of 60 times per second
+                            self.tilemap.offgrid_tiles.append({'type': self.tile_list[self.tile_group], 'variant': self.tile_variant, 'pos': (mpos[0] + self.scroll[0], mpos[1] + self.scroll[1])})
                     if event.button == 3:
                         self.right_clicking = True
                     if self.shift:
