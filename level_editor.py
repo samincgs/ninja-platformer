@@ -129,6 +129,8 @@ class LevelEditor:
                         self.ongrid = not self.ongrid
                     if event.key == pygame.K_o: # use o for output
                         self.tilemap.save('map.json')
+                    if event.key == pygame.K_t:
+                        self.tilemap.autotile()
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_a:
                         self.movement[0] = False

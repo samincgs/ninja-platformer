@@ -11,11 +11,10 @@ class Game:
         pygame.init()
 
         #displays
-        self.screen = pygame.display.set_mode(((640, 480))) # main screen
-        self.display = pygame.Surface((320, 240)) #display screen
-        
         pygame.display.set_caption('ninja platformer')
-        
+        self.screen = pygame.display.set_mode((640, 480)) # main screen 40 / 30
+        self.display = pygame.Surface((320, 240)) #display screen
+    
         self.clock = pygame.time.Clock()
         
         self.assets = { # all assets loaded in using utils
@@ -37,14 +36,17 @@ class Game:
         
         self.clouds = Clouds(self.assets['clouds'], count=20)
         
-        self.player = Player(self, (50, 50), self.assets['player'].get_size())
+        self.player = Player(self, (75, 75), self.assets['player'].get_size())
         
         self.tilemap = Tilemap(self, tile_size=16)
         
         self.scroll = [0, 0]
         
+        try:
+            self.tilemap.load('map.json')
+        except FileNotFoundError:
+            pass
         
-
     def run(self):
         while True:
             
@@ -69,6 +71,9 @@ class Game:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
                     if event.key == pygame.K_LEFT:
                         self.movement[0] = True
                     if event.key == pygame.K_RIGHT:
