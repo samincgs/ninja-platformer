@@ -13,7 +13,7 @@ class LevelEditor:
         pygame.display.set_caption('level editor')
         self.screen = pygame.display.set_mode(((640, 480))) # main screen
         self.display = pygame.Surface((320, 240)) #display screen
-        
+ 
         self.clock = pygame.time.Clock()
         
         self.assets = { # all assets loaded in using utils

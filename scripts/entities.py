@@ -10,7 +10,7 @@ class PhysicsEntity:
         self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
         
         self.action = ''
-        self.anim_offset = (-3, -2) 
+        self.anim_offset = (-3, -2) # since the animation is bigger than our usual player img, we add a padding
         self.flip = False
         self.set_action('idle')
         
@@ -30,9 +30,9 @@ class PhysicsEntity:
         
         # physics
         self.pos[0] += frame_movement[0]
-        entity_rect = self.rect()
-        for rect in tilemap.physics_rects_around(self.pos):
-            if entity_rect.colliderect(rect):
+        entity_rect = self.rect() # get the current rect position
+        for rect in tilemap.physics_rects_around(self.pos): # check if the position collides with any of the collideable rects
+            if entity_rect.colliderect(rect): # see if player collides
                 if frame_movement[0] > 0:
                     entity_rect.right = rect.left
                     self.collisions['right'] = True
@@ -58,17 +58,16 @@ class PhysicsEntity:
         if movement[0] < 0:
             self.flip = True
          
-        self.velocity[1] = min(self.velocity[1] + 0.1, 5)
+        self.velocity[1] = min(self.velocity[1] + 0.1, 5) # adds velocity so player moves faster and faster down, terminal velocity when it reaches 5
         
         if self.collisions['down'] or self.collisions['up']:
             self.velocity[1] = 0
             
         self.animation.update()
-        
-        
+    
         
     def render(self, surf, offset=(0, 0)):
-        surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1])) 
+        surf.blit(pygame.transform.flip(self.animation.img, self.flip, False), (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1])) 
         # surf.blit(self.game.assets['player'], (self.pos[0] - offset[0], self.pos[1] - offset[1]))
         
 class Player(PhysicsEntity):

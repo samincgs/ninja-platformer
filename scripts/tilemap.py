@@ -7,14 +7,14 @@ PHYSICS_TILES = {'grass', 'stone'}
 AUTOTILE_TYPES = {'grass', 'stone'}
 AUTOTILE_MAP = { # run sorted on the list to make sure the list comes out in the same order everytime and then convert into a tuple because a list cannot be used as a key
     tuple(sorted([(1, 0), (0, 1)])): 0, # top left
-    tuple(sorted([(-1, 0), (0, 1), (1, 0)])): 1, # top middle
+    tuple(sorted([(-1, 0), (0, 1), (1, 0)])): 1, # top center
     tuple(sorted([(-1, 0), (0, 1)])): 2, # top right
-    tuple(sorted([(-1, 0), (0, -1), (0, 1)])): 3, # middle right
+    tuple(sorted([(-1, 0), (0, -1), (0, 1)])): 3, # center right
     tuple(sorted([(-1, 0), (0, -1)])): 4, # bottom right
-    tuple(sorted([(-1, 0), (0, -1), (1, 0)])): 5, # bottom middle
+    tuple(sorted([(-1, 0), (0, -1), (1, 0)])): 5, # bottom center
     tuple(sorted([(1, 0), (0, -1)])): 6, # bottom left
-    tuple(sorted([(1, 0), (0, 1), (0, -1)])): 7, # middle left
-    tuple(sorted([(-1, 0), (1, 0), (0, 1), (0, -1)])): 8, # middle middle
+    tuple(sorted([(1, 0), (0, 1), (0, -1)])): 7, # center left
+    tuple(sorted([(-1, 0), (1, 0), (0, 1), (0, -1)])): 8, # center 
 }
 
 class Tilemap:
@@ -44,8 +44,33 @@ class Tilemap:
         rects = []
         for tile in self.tiles_around(pos):
             if tile['type'] in PHYSICS_TILES:
-                rects.append(pygame.Rect(tile['pos'][0] * self.tile_size, tile['pos'][1] * self.tile_size, self.tile_size, self.tile_size))
+                rects.append(pygame.Rect(tile['pos'][0] * self.tile_size, tile['pos'][1] * self.tile_size, self.tile_size, self.tile_size)) # turn tile back into position coordinate since Rects work with position not tiles
         return rects
+    
+    
+    def extract(self, id_pairs, keep=False): # an id_pairs is a list of [type and variant] keep is True if u want to remove them from the map
+        '''This function will take a bunch of different tiles and tell us where the map and give us information about it'''
+        matches = []
+        
+        # first for the offgrid tiles
+        for tile in self.offgrid_tiles.copy(): # we copy because we might want to delete from the list if we are not keeping
+            if (tile['type'], tile['variant']) in id_pairs:
+                matches.append(tile.copy())
+                if not keep:
+                    self.offgrid_tiles.remove(tile)            
+        # for tilemap
+        for loc in self.tilemap:
+            tile = self.tilemap[loc]
+            if (tile['type'], tile['variant']) in id_pairs:
+                matches.append(tile.copy())
+                matches[-1]['pos'] = matches[-1]['pos'].copy() # copy again because pos is a list in a dictionary so when we did tile.copy() we only got an additional dictionary but the reference to the position list is the same
+                matches[-1]['pos'][0] *= self.tile_size 
+                matches[-1]['pos'][1] *= self.tile_size 
+                if not keep:
+                    del self.tilemap[loc]
+                    
+        return matches
+                    
     
     def save(self, path):
         f = open(path, 'w')
