@@ -41,7 +41,7 @@ class LevelEditor:
         self.ongrid = True
         
         try:
-            self.tilemap.load('map.json')
+            self.tilemap.load('data/maps/0.json')
         except FileNotFoundError:
             pass
 

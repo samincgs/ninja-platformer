@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 import math
-from scripts.entities import PhysicsEntity, Player
+from scripts.entities import PhysicsEntity, Player, Enemy
 from scripts.utils import load_image, load_images
 from scripts.tilemap import Tilemap
 from scripts.clouds import Clouds 
@@ -33,6 +33,10 @@ class Game:
             'player/jump': Animation(load_images('entities/player/jump')),
             'player/slide': Animation(load_images('entities/player/slide')),
             'player/wall_slide': Animation(load_images('entities/player/wall_slide')),  
+            'enemy/idle': Animation(load_images('entities/enemy/idle'), img_dur=6),
+            'enemy/run': Animation(load_images('entities/enemy/run'), img_dur=6),
+            'gun': load_image('gun.png'),
+            'projectile': load_image('projectile.png'),
             'particle/leaf': Animation(load_images('particles/leaf'), img_dur=20, loop=False),
             'particle/particle': Animation(load_images('particles/particle'), loop=False)
         }
@@ -45,15 +49,17 @@ class Game:
         
         self.tilemap = Tilemap(self, tile_size=16)
         
-        self.scroll = [0, 0]
+        self.load_level(0)
         
-        try:
-            self.tilemap.load('map.json')
-        except FileNotFoundError:
-            pass
+    def load_level(self, map_id):
+        self.tilemap.load(f'data/maps/' + str(map_id) + '.json')
+        
+        self.scroll = [0, 0]
         
         self.leaf_spawners = []
         self.particles = []
+        self.enemies = []
+        self.projectiles = []
         
         for tree in self.tilemap.extract([('large_decor', 2)], keep=True): # get the position of the tree images using the extract function
             self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13)) # make the tree into a pygame.Rect and store it in the list add 5 to the position to get a decent position for where the leaf should start spawning (30, 15) because it makes sense for the leaves to be there
@@ -62,8 +68,8 @@ class Game:
             if spawner['variant'] == 0: # player
                 self.player.pos = spawner['pos']
             else:
-                print(spawner['pos'], 'enemy') # enemy
- 
+                self.enemies.append(Enemy(self, spawner['pos'], (8, 15)))
+    
     def run(self):
         while True:
             
@@ -88,9 +94,28 @@ class Game:
             
             self.tilemap.render(self.display, offset=render_scroll)
             
+            for enemy in self.enemies.copy(): # copy because we will be removing from the list
+                enemy.update(self.tilemap, movement=(0, 0))
+                enemy.render(self.display, offset=render_scroll)
+            
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))  
             self.player.render(self.display, offset=render_scroll)
             
+            # [[x, y], direction, timer]
+            for projectile in self.projectiles.copy():
+                projectile[0][0] += projectile[1]
+                projectile[2] += 1
+                img = self.assets['projectile']
+                self.display.blit(img, (projectile[0][0] - img.get_width() / 2 - render_scroll[0], projectile[0][1] - img.get_height() / 2 - render_scroll[1])) # center it to make sure its drawn on its origin point while it moves in a specfic direction (for visual accuray and collision) 
+                if self.tilemap.solid_check(projectile[0]):
+                    self.projectiles.remove(projectile)
+                elif projectile[2] > 360: # if timer is greater than 6 seconds
+                    self.projectiles.remove(projectile)
+                elif abs(self.player.dashing) < 50: # if you are not in the actual dashing animation
+                    if self.player.rect().collidepoint(projectile[0]):
+                        self.projectiles.remove(projectile)
+                        print('player hit')
+                
             # collection of particles
             for particle in self.particles.copy():
                 kill = particle.update()

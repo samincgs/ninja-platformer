@@ -47,6 +47,14 @@ class Tilemap:
                 rects.append(pygame.Rect(tile['pos'][0] * self.tile_size, tile['pos'][1] * self.tile_size, self.tile_size, self.tile_size)) # turn tile back into position coordinate since Rects work with position not tiles
         return rects
     
+    def solid_check(self, pos):
+        tile_loc = (int(pos[0] // self.tile_size), int(pos[1] // self.tile_size))
+        check_loc = str(tile_loc[0]) + ';' + str(tile_loc[1])
+        if check_loc in self.tilemap:
+            tile = self.tilemap[check_loc]
+            if tile['type'] in PHYSICS_TILES:
+                return tile
+    
     
     def extract(self, id_pairs, keep=False): # an id_pairs is a list of [(type,variant)] keep is True if u want to remove them from the map
         '''This function will take a bunch of different tiles and tell us where the map and give us information about it
@@ -59,7 +67,7 @@ class Tilemap:
             if (tile['type'], tile['variant']) in id_pairs:
                 matches.append(tile.copy())
                 if not keep:
-                    self.offgrid_tiles.remove(tile)            
+                    self.offgrid_tiles.remove(tile)  # remove from the actual offgrid tiles list       
         # for tilemap
         for loc in self.tilemap.copy():
             tile = self.tilemap[loc]
@@ -69,7 +77,7 @@ class Tilemap:
                 matches[-1]['pos'][0] *= self.tile_size 
                 matches[-1]['pos'][1] *= self.tile_size 
                 if not keep:
-                    del self.tilemap[loc]
+                    del self.tilemap[loc] # remove from the actual tilemap object
                     
         return matches
                     

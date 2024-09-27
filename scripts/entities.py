@@ -183,3 +183,53 @@ class Player(PhysicsEntity):
                 self.velocity[0] *= 0.1 # cause a sudden stop to the dash by severely cutting down on the velocity which is further normalized to 0 by if statements
             pvelocity = [abs(self.dashing) / self.dashing * random.random() * 3, 0] # use self.dashing so it moves along with the magnitude of the velocity 
             self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=pvelocity, frame=random.randint(0, 7)))
+                       
+class Enemy(PhysicsEntity):
+    def __init__(self, game, pos, size):
+        super().__init__(game, 'enemy', pos, size)
+        
+        self.walking = 0
+        
+    def update(self, tilemap, movement=(0, 0)):
+        if self.walking:
+            if tilemap.solid_check((self.rect().centerx + (-4 if self.flip else 4), self.pos[1] + 23)): # check seven tiles in front of the enemy to see if theres a tile
+                if self.collisions['right'] or self.collisions['left']:
+                    self.flip = not self.flip
+                else:
+                    movement = (movement[0] - 0.5 if self.flip else 0.5, movement[1])
+            else:
+                self.flip = not self.flip
+            self.walking = max(0, self.walking - 1)
+            if not self.walking: # gives us 1 frame right before it goes to else statement
+                # calculate the distance between the enemy and the player (vector pointing from the enemy to the player)
+                # destination - current_location (or) target - origin
+                # since we want a projectile to the player from the enemy we do player.pos - enemy.pos
+                # we do destination - current_loc when we want a vector with magnitude and direction
+                # we do a pythagorean theorem of dis_x + dis_y to get the scalar distance between two points
+                dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
+                if (abs(dis[1]) < 16): # checks the vertical distance to make sure that the player is in the same vertical space as the enemy
+                    if (self.flip and dis[0] < 0): # enemy is facing left and player is to the left 
+                        self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery], -1.5, 0])
+                    elif (not self.flip and dis[0] > 0): # enemy is facing right and player is to the right
+                        self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery], 1.5, 0])
+                
+                
+        elif random.random() < 0.01: # happens ever 1.67 seconds for 60fps 
+            self.walking = random.randint(30, 120) # number of frames the enem will walk (between half a second and 2 seconds)
+            
+        super().update(tilemap, movement=movement)
+        
+        if movement[0] != 0:
+            self.set_action('run')
+        else:
+            self.set_action('idle')
+                   
+    def render(self, surf, offset=(0, 0)):
+        super().render(surf, offset=offset)
+
+        # add the gun
+        if self.flip:
+            # subtracting the width renders it from the persepective of the top right of the gun img when its pointing left
+            surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False),(self.rect().centerx - 3 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
+        else:
+            surf.blit(self.game.assets['gun'], (self.rect().centerx + 3 - offset[0], self.rect().centery - offset[1]))
