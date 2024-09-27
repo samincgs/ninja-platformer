@@ -176,7 +176,8 @@ class Player(PhysicsEntity):
             self.dashing = min(self.dashing + 1, 0)        
         
         # A dash that does a stream of particles as it moves towards a direction 
-        if abs(self.dashing) > 50: # if the dash is in its first ten frames (0 - 50) acts as a cooldown so the player cannot spam the dash
+        if abs(self.dashing) > 50: # if the dash is in its first ten frames 
+            # (0 - 50) acts as a cooldown so the player cannot spam the dash
             self.velocity[0] = abs(self.dashing) / self.dashing * 8 # will give us 1 or -1 depending on if we are dashing to the left or right
             if abs(self.dashing) == 51: # 1 frame 
                 self.velocity[0] *= 0.1 # cause a sudden stop to the dash by severely cutting down on the velocity which is further normalized to 0 by if statements

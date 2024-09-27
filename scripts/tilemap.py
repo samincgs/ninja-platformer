@@ -48,8 +48,10 @@ class Tilemap:
         return rects
     
     
-    def extract(self, id_pairs, keep=False): # an id_pairs is a list of [type and variant] keep is True if u want to remove them from the map
-        '''This function will take a bunch of different tiles and tell us where the map and give us information about it'''
+    def extract(self, id_pairs, keep=False): # an id_pairs is a list of [(type,variant)] keep is True if u want to remove them from the map
+        '''This function will take a bunch of different tiles and tell us where the map and give us information about it
+            keep makes it so we remove it from the tilemap because we dont want them to show in the tile map
+        '''
         matches = []
         
         # first for the offgrid tiles
@@ -59,11 +61,11 @@ class Tilemap:
                 if not keep:
                     self.offgrid_tiles.remove(tile)            
         # for tilemap
-        for loc in self.tilemap:
+        for loc in self.tilemap.copy():
             tile = self.tilemap[loc]
             if (tile['type'], tile['variant']) in id_pairs:
-                matches.append(tile.copy())
-                matches[-1]['pos'] = matches[-1]['pos'].copy() # copy again because pos is a list in a dictionary so when we did tile.copy() we only got an additional dictionary but the reference to the position list is the same
+                matches.append(tile)
+                matches[-1]['pos'] = matches[-1]['pos'].copy() # copy again because pos is a list in a dictionary so when we did tile.copy() we only did a shallow copy of the top level so we got an additional dictionary but the reference to the position list is the same
                 matches[-1]['pos'][0] *= self.tile_size 
                 matches[-1]['pos'][1] *= self.tile_size 
                 if not keep:

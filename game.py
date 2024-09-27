@@ -53,11 +53,17 @@ class Game:
             pass
         
         self.leaf_spawners = []
+        self.particles = []
+        
         for tree in self.tilemap.extract([('large_decor', 2)], keep=True): # get the position of the tree images using the extract function
             self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13)) # make the tree into a pygame.Rect and store it in the list add 5 to the position to get a decent position for where the leaf should start spawning (30, 15) because it makes sense for the leaves to be there
         
-        self.particles = []
-        
+        for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)], keep=False):
+            if spawner['variant'] == 0: # player
+                self.player.pos = spawner['pos']
+            else:
+                print(spawner['pos'], 'enemy') # enemy
+ 
     def run(self):
         while True:
             
