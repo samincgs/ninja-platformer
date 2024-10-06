@@ -3,6 +3,8 @@ import math
 import random
 
 from scripts.particle import Particle
+from scripts.projectile import Projectile
+from scripts.spark import Spark
 
 class PhysicsEntity:
     def __init__(self, game, e_type, pos, size):
@@ -82,7 +84,7 @@ class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
         super().__init__(game, 'player', pos, size)
         self.air_time = 0
-        self.jumps = 2 
+        self.jumps = 1
         self.wall_slide = False
         self.dashing = 0
     
@@ -130,12 +132,18 @@ class Player(PhysicsEntity):
         
         self.air_time += 1
         
+        # when player dies
+        if self.air_time > 120:
+            self.game.screenshake = max(16, self.game.screenshake)
+            self.game.dead += 1
+        
         if self.collisions['down']:
             self.air_time = 0
-            self.jumps = 2
-        
+            self.jumps = 1
+            
         self.wall_slide = False # make it so its a single frame which
         if (self.collisions['right'] or self.collisions['left']) and self.air_time > 4: # if we hit the wall on either side and are in the air
+            self.air_time = 30 # set air time to 30 so player is not considered dead when in the air for too long
             self.wall_slide = True
             self.velocity[1] = min(self.velocity[1], 0.5) # capping the downward velocity at 0.5
             if self.collisions['right']:
@@ -165,10 +173,10 @@ class Player(PhysicsEntity):
             for i in range(20):
                 angle = random.random() * math.pi * 2 # random angle from a circle (full circle of angles in radians)
                 speed = random.random() * 0.5 + 0.5 # random speed between 0.5 and 1
-                # cosine for the x axis and sine for the y axis (generating a velocity based on the  angle) 
+                # cosine for the x axis and sine for the y axis (generating a velocity based on the angle) 
                 # this is how you move something in a direction in 2D 
                 # for the x axis you take the cosine of the angle you want to move and multiply by the amount you want to move
-                pvelocity = [math.cos(angle) * speed, math.sin(angle) * speed] 
+                pvelocity = [math.cos(angle) * speed, math.sin(angle) * speed] # polar coordinates to cartesian coordinates
                 self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=pvelocity, frame=random.randint(0, 7)))
         if self.dashing > 0:
             self.dashing = max(self.dashing - 1, 0)   
@@ -209,10 +217,13 @@ class Enemy(PhysicsEntity):
                 dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
                 if (abs(dis[1]) < 16): # checks the vertical distance to make sure that the player is in the same vertical space as the enemy
                     if (self.flip and dis[0] < 0): # enemy is facing left and player is to the left 
-                        self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery], -1.5, 0])
+                        self.game.projectiles.append(Projectile(self.game, pos=[self.rect().centerx - 7, self.rect().centery], speed=-1.5, timer=0)) #[[self.rect().centerx - 7, self.rect().centery], -1.5, 0]
+                        for i in range(6):
+                            self.game.sparks.append(Spark(self.game.projectiles[-1].pos, random.random() - 0.5 + math.pi, 2 + random.random()))
                     elif (not self.flip and dis[0] > 0): # enemy is facing right and player is to the right
-                        self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery], 1.5, 0])
-                
+                        self.game.projectiles.append(Projectile(self.game, [self.rect().centerx + 7, self.rect().centery], speed=1.5, timer=0)) # [[self.rect().centerx + 7, self.rect().centery], 1.5, 0]
+                        for i in range(6):
+                            self.game.sparks.append(Spark(self.game.projectiles[-1].pos, random.random() - 0.5, 2 + random.random()))
                 
         elif random.random() < 0.01: # happens ever 1.67 seconds for 60fps 
             self.walking = random.randint(30, 120) # number of frames the enem will walk (between half a second and 2 seconds)
@@ -223,6 +234,21 @@ class Enemy(PhysicsEntity):
             self.set_action('run')
         else:
             self.set_action('idle')
+        
+        # check if the dash animation of the player collides with the enemy    
+        if abs(self.game.player.dashing) >= 50:
+            if self.rect().colliderect(self.game.player.rect()):
+                self.game.screenshake = max(32, self.game.screenshake)
+                for i in range(40):
+                    angle = random.random() * math.pi * 2 # random angle in a full circle
+                    speed = random.random() * 5
+                    velocity = [math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5] # add math.pi so particles spawn in the opposite direction of the sparks
+                    self.game.sparks.append(Spark(self.rect().center, angle=angle, speed= 2 + random.random()))
+                    self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=velocity,frame=random.randint(0, 7) ))
+                # add extra bigger sparks that go left and right
+                self.game.sparks.append(Spark(self.rect().center, 0, 5 + random.random()))
+                self.game.sparks.append(Spark(self.rect().center, math.pi, 5 + random.random()))
+                return True
                    
     def render(self, surf, offset=(0, 0)):
         super().render(surf, offset=offset)
