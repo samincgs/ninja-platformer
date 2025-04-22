@@ -35,7 +35,7 @@ class PhysicsEntity:
     def update(self, tilemap, movement=(0, 0)):
         frame_movement = (movement[0] + self.velocity[0], movement[1] + self.velocity[1])
         self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
-        
+                
         # physics
         self.pos[0] += frame_movement[0]
         entity_rect = self.rect() # get the current rect position
@@ -69,7 +69,6 @@ class PhysicsEntity:
         self.last_movement = movement
          
         self.velocity[1] = min(self.velocity[1] + 0.1, 5) # adds velocity so player moves faster and faster down, terminal velocity when it reaches 5
-        
         if self.collisions['down'] or self.collisions['up']:
             self.velocity[1] = 0
             
@@ -182,6 +181,7 @@ class Player(PhysicsEntity):
             self.dashing = max(self.dashing - 1, 0)   
         if self.dashing < 0:
             self.dashing = min(self.dashing + 1, 0)        
+        
         
         # A dash that does a stream of particles as it moves towards a direction 
         if abs(self.dashing) > 50: # if the dash is in its first ten frames 

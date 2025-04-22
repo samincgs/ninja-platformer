@@ -34,7 +34,7 @@ class Projectile:
         if self.game.tilemap.solid_check(self.pos):
             kill = True
             for i in range(6):
-                self.game.sparks.append(Spark(self.pos,random.random() - 0.5 + (math.pi if self.speed > 0 else 0),1 + random.random() * 2,))
+                self.game.sparks.append(Spark(self.pos, random.random() - 0.5 + (math.pi if self.speed > 0 else 0),1 + random.random() * 2,))
 
         elif self.timer > 360:  # if timer is greater than 6 seconds
             kill = True
