@@ -12,7 +12,7 @@ class Cloud:
         
     def render(self, surf, offset=(0, 0)):
         render_pos = (self.pos[0] - offset[0] * self.depth, self.pos[1] - offset[1] * self.depth)
-        surf.blit(self.img, (render_pos[0] % surf.get_width(), render_pos[1] % surf.get_height())) # add fluffys way if not work
+        surf.blit(self.img, (render_pos[0] % (surf.get_width() + self.img.get_width()) - self.img.get_width(), render_pos[1] % (surf.get_height() + self.img.get_height()) - self.img.get_height())) # add fluffys way if not work
         
         
 class Clouds:
@@ -20,7 +20,7 @@ class Clouds:
         self.clouds = []
          
         for i in range(count):
-            self.clouds.append(Cloud((random.random() * 99999, random.random() * 99999), random.choice(cloud_images), random.random() + 5, random.random() * 0.6 + 0.2))
+            self.clouds.append(Cloud((random.random() * 99999, random.random() * 99999), random.choice(cloud_images), random.random() * 2 + 5, random.random() * 0.6 + 0.2))
             
         self.clouds.sort(key=lambda x: x.depth)
         

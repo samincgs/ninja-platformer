@@ -1,5 +1,6 @@
 import pygame
 import sys
+import time
 
 from scripts.entities import PhysicsEntity
 from scripts.tilemap import Tilemap
@@ -17,7 +18,10 @@ class Game:
         self.clock = pygame.time.Clock()
         
         self.fps = 60
+        
+        
         self.dt = 0.01
+        self.last_time = time.time()
         
         self.assets = {
             'grass': load_imgs('tiles/grass'),
@@ -38,7 +42,10 @@ class Game:
 
     def run(self):
         while True:
-            self.dt = self.clock.tick(self.fps) / 1000
+            self.dt = time.time() - self.last_time
+            self.last_time = time.time()
+            
+            print(self.dt)
             
             self.display.blit(self.assets['background'], (0, 0))
             
@@ -50,7 +57,7 @@ class Game:
             self.clouds.update(self.dt)
             self.clouds.render(self.display, offset=render_scroll)
             
-            self.tilemap.render(self.display, offset=render_scroll)
+            self.tilemap.render_visible(self.display, offset=render_scroll)
             
             self.player.update(self.dt)
             self.player.render(self.display, offset=render_scroll)
@@ -79,6 +86,7 @@ class Game:
             # print(self.clock.get_fps())
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.flip()
+            self.clock.tick(60)
             
             
 if __name__ == '__main__':
