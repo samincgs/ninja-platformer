@@ -4,6 +4,7 @@ import sys
 from scripts.entities import PhysicsEntity
 from scripts.tilemap import Tilemap
 from scripts.utils import load_img, load_imgs
+from scripts.clouds import Clouds
 
 class Game:
     def __init__(self):
@@ -24,11 +25,13 @@ class Game:
             'decor': load_imgs('tiles/decor'),
             'large_decor': load_imgs('tiles/large_decor'),
             'player': load_img('entities/player.png'),
-            'background': load_img('background.png')
+            'background': load_img('background.png'),
+            'clouds': load_imgs('clouds')
         }
         
         self.player = PhysicsEntity(self, (70, 20), self.assets['player'].get_size(), 'player')
         self.tilemap = Tilemap(self, tile_size=16)
+        self.clouds = Clouds(self.assets['clouds'], count=20)
         
         self.movement = [False, False]
         self.scroll = [0, 0]
@@ -43,6 +46,9 @@ class Game:
             self.scroll[0] += (self.player.rect.center[0] - self.display.get_width() // 2 - self.scroll[0]) / (camera_speed / self.dt)
             self.scroll[1] += (self.player.rect.center[1] - self.display.get_height() // 2 - self.scroll[1]) / (camera_speed / self.dt)
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
+            
+            self.clouds.update(self.dt)
+            self.clouds.render(self.display, offset=render_scroll)
             
             self.tilemap.render(self.display, offset=render_scroll)
             
