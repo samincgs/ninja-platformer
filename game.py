@@ -24,23 +24,30 @@ class Game:
             'decor': load_imgs('tiles/decor'),
             'large_decor': load_imgs('tiles/large_decor'),
             'player': load_img('entities/player.png'),
+            'background': load_img('background.png')
         }
         
         self.player = PhysicsEntity(self, (70, 20), self.assets['player'].get_size(), 'player')
         self.tilemap = Tilemap(self, tile_size=16)
         
         self.movement = [False, False]
+        self.scroll = [0, 0]
 
     def run(self):
         while True:
             self.dt = self.clock.tick(self.fps) / 1000
             
-            self.display.fill((14, 219, 248))
+            self.display.blit(self.assets['background'], (0, 0))
             
-            self.tilemap.render(self.display)
+            camera_speed = 0.5
+            self.scroll[0] += (self.player.rect.center[0] - self.display.get_width() // 2 - self.scroll[0]) / (camera_speed / self.dt)
+            self.scroll[1] += (self.player.rect.center[1] - self.display.get_height() // 2 - self.scroll[1]) / (camera_speed / self.dt)
+            render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
+            
+            self.tilemap.render(self.display, offset=render_scroll)
             
             self.player.update(self.dt)
-            self.player.render(self.display)
+            self.player.render(self.display, offset=render_scroll)
             
             
             for event in pygame.event.get():

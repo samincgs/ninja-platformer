@@ -22,8 +22,8 @@ class Entity:
     def update(self, dt):
         pass
     
-    def render(self, surf):
-        surf.blit(self.img, self.pos)
+    def render(self, surf, offset=(0, 0)):
+        surf.blit(self.img, (self.pos[0] - offset[0], self.pos[1] - offset[1]))
 
 
 class PhysicsEntity(Entity):
@@ -64,7 +64,6 @@ class PhysicsEntity(Entity):
     def physics_movement(self, tilemap, movement=(0, 0)):
         self.collision_directions = { 'up': False, 'down': False, 'right': False, 'left': False}
         
-        print(movement)
         self.pos[0] += movement[0]
         tile_rects = tilemap.get_nearby_rects(self.pos)
         collision_rects = tilemap.collision_test(self.rect, tile_rects)

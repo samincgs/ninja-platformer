@@ -15,7 +15,7 @@ class Tilemap:
             self.tilemap[str(3 + i) + ';9'] = {'type': 'grass', 'variant': 1, 'pos': (3 + i, 9)}
         
         for i in range(5):
-            self.tilemap['7;' + str(5 + i)] = {'type': 'stone', 'variant': 1, 'pos': (7 , 5 + i)}
+            self.tilemap['9;' + str(5 + i)] = {'type': 'stone', 'variant': 1, 'pos': (9 , 5 + i)}
             
     def collision_test(self, entity_rect, rect_list):
         collision_rects = []
@@ -36,11 +36,11 @@ class Tilemap:
                     rects.append(pygame.Rect(tile['pos'][0] * self.tile_size, tile['pos'][1] * self.tile_size, self.tile_size, self.tile_size))
         return rects
                 
-    def render(self, surf):
+    def render(self, surf, offset=(0, 0)):
         # offgrid
         for tile in self.offgrid_tiles:
-            surf.blit(self.game.assets[tile['type']][tile['variant']], tile['pos'])
+            surf.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][0] - offset[0], tile['pos'][1] - offset[1]))
         # grid
         for tile_loc in self.tilemap:
             tile = self.tilemap[tile_loc]
-            surf.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][0] * self.tile_size, tile['pos'][1] * self.tile_size))
+            surf.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][0] * self.tile_size - offset[0], tile['pos'][1] * self.tile_size - offset[1]))
