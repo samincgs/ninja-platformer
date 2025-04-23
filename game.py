@@ -1,6 +1,9 @@
 import pygame
 import sys
 
+from scripts.entities import PhysicsEntity
+from scripts.tilemap import Tilemap
+from scripts.utils import load_img, load_imgs
 
 class Game:
     def __init__(self):
@@ -8,36 +11,36 @@ class Game:
 
         pygame.display.set_caption('Ninja Platformer')
         self.screen = pygame.display.set_mode((640, 480))
+        self.display = pygame.Surface((320, 240))
+        
         self.clock = pygame.time.Clock()
         
         self.fps = 60
         self.dt = 0.01
         
+        self.assets = {
+            'grass': load_imgs('tiles/grass'),
+            'stone': load_imgs('tiles/stone'),
+            'decor': load_imgs('tiles/decor'),
+            'large_decor': load_imgs('tiles/large_decor'),
+            'player': load_img('entities/player.png'),
+        }
+        
+        self.player = PhysicsEntity(self, (70, 20), self.assets['player'].get_size(), 'player')
+        self.tilemap = Tilemap(self, tile_size=16)
+        
         self.movement = [False, False]
-        
-        
-        self.img = pygame.image.load('data/images/clouds/cloud_1.png').convert()
-        self.img.set_colorkey((0, 0, 0))
-        
-        self.img_pos = [160, 260]
-        
-        self.collideable_area = pygame.Rect(50, 50, 300, 50)
-        
 
     def run(self):
         while True:
+            self.dt = self.clock.tick(self.fps) / 1000
             
-            self.screen.fill((14, 219, 248))
+            self.display.fill((14, 219, 248))
             
-            self.img_pos[1] += (self.movement[1] - self.movement[0]) * 5
-            img_rect = pygame.Rect(self.img_pos[0], self.img_pos[1], self.img.get_width(), self.img.get_height())
+            self.tilemap.render(self.display)
             
-            if img_rect.colliderect(self.collideable_area):
-                pygame.draw.rect(self.screen, (0, 100, 255), self.collideable_area)
-            else:
-                pygame.draw.rect(self.screen, (0, 50, 155), self.collideable_area)
-            
-            self.screen.blit(self.img, self.img_pos)
+            self.player.update(self.dt)
+            self.player.render(self.display)
             
             
             for event in pygame.event.get():
@@ -45,22 +48,25 @@ class Game:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
+                    if event.key == pygame.K_LEFT:
                         self.movement[0] = True
-                    if event.key == pygame.K_DOWN:
+                    if event.key == pygame.K_RIGHT:
                         self.movement[1] = True
                     if event.key == pygame.K_f:
                         self.fps = 30 if self.fps == 60 else 60
-                if event.type == pygame.KEYUP:
                     if event.key == pygame.K_UP:
+                        self.player.velocity[1] = -160
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_LEFT:
                         self.movement[0] = False
-                    if event.key == pygame.K_DOWN:
+                    if event.key == pygame.K_RIGHT:
                         self.movement[1] = False
                     
                     
             # print(self.clock.get_fps())
+            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.flip()
-            self.dt = self.clock.tick(self.fps) / 1000
+            
             
 if __name__ == '__main__':
     Game().run()
