@@ -2,7 +2,6 @@ import pygame
 import sys
 import time
 
-from scripts.entities import PhysicsEntity
 from scripts.player import Player
 from scripts.tilemap import Tilemap
 from scripts.animation import Animation
@@ -21,7 +20,6 @@ class Game:
         
         self.fps = 60
         
-        
         self.dt = 0.01
         self.last_time = time.time()
         
@@ -36,17 +34,18 @@ class Game:
         }
         
         self.animations = {
-            'player/idle': Animation(load_imgs('entities/player/idle'), img_dur=0.15, loop=True),
-            'player/run': Animation(load_imgs('entities/player/run'), img_dur=0.1, loop=True),
+            'player/idle': Animation(load_imgs('entities/player/idle'), img_dur=0.12, loop=True),
+            'player/run': Animation(load_imgs('entities/player/run'), img_dur=0.08, loop=True),
             'player/jump': Animation(load_imgs('entities/player/jump'), loop=False),
             'player/wall_slide': Animation(load_imgs('entities/player/wall_slide'), loop=False),
         }
-                
-        self.player = Player(self, (70, 20), self.assets['player'].get_size(), 'player')
+        
+        
+        self.player = Player(self, (70, 20), self.assets['player'].get_size())
         self.tilemap = Tilemap(self, tile_size=16)
         self.clouds = Clouds(self.assets['clouds'], count=20)
         
-        self.movement = [False, False]
+        self.input = [False, False]
         self.scroll = [0, 0]
 
     def run(self):
@@ -76,18 +75,18 @@ class Game:
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        self.movement[0] = True
+                        self.input[0] = True
                     if event.key == pygame.K_RIGHT:
-                        self.movement[1] = True
+                        self.input[1] = True
                     if event.key == pygame.K_f:
                         self.fps = 30 if self.fps == 60 else 60
                     if event.key == pygame.K_UP:
                         self.player.velocity[1] = -160
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:
-                        self.movement[0] = False
+                        self.input[0] = False
                     if event.key == pygame.K_RIGHT:
-                        self.movement[1] = False
+                        self.input[1] = False
                     
                     
             # print(self.clock.get_fps())
