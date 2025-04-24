@@ -3,7 +3,9 @@ import sys
 import time
 
 from scripts.entities import PhysicsEntity
+from scripts.player import Player
 from scripts.tilemap import Tilemap
+from scripts.animation import Animation
 from scripts.utils import load_img, load_imgs
 from scripts.clouds import Clouds
 
@@ -33,7 +35,14 @@ class Game:
             'clouds': load_imgs('clouds')
         }
         
-        self.player = PhysicsEntity(self, (70, 20), self.assets['player'].get_size(), 'player')
+        self.animations = {
+            'player/idle': Animation(load_imgs('entities/player/idle'), img_dur=0.15, loop=True),
+            'player/run': Animation(load_imgs('entities/player/run'), img_dur=0.1, loop=True),
+            'player/jump': Animation(load_imgs('entities/player/jump'), loop=False),
+            'player/wall_slide': Animation(load_imgs('entities/player/wall_slide'), loop=False),
+        }
+                
+        self.player = Player(self, (70, 20), self.assets['player'].get_size(), 'player')
         self.tilemap = Tilemap(self, tile_size=16)
         self.clouds = Clouds(self.assets['clouds'], count=20)
         
@@ -44,12 +53,10 @@ class Game:
         while True:
             self.dt = time.time() - self.last_time
             self.last_time = time.time()
-            
-            print(self.dt)
-            
+                        
             self.display.blit(self.assets['background'], (0, 0))
             
-            camera_speed = 0.5
+            camera_speed = 0.4
             self.scroll[0] += (self.player.rect.center[0] - self.display.get_width() // 2 - self.scroll[0]) / (camera_speed / self.dt)
             self.scroll[1] += (self.player.rect.center[1] - self.display.get_height() // 2 - self.scroll[1]) / (camera_speed / self.dt)
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
@@ -86,7 +93,7 @@ class Game:
             # print(self.clock.get_fps())
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.flip()
-            self.clock.tick(60)
+            self.clock.tick(self.fps)
             
             
 if __name__ == '__main__':

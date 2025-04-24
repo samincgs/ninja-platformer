@@ -7,11 +7,18 @@ class Entity:
         self.size = size
         self.type = e_type
         
+        self.animation = None
+        self.action = ''
+        
         self.flip = [False, False]
-    
+        
     @property
     def img(self):
-        return self.game.assets[self.type]
+        if self.animation:
+            img = self.animation.img
+        if any(self.flip):
+            img = pygame.transform.flip(img, self.flip[0], self.flip[1])
+        return img
     
     @property 
     def center(self):
@@ -21,8 +28,14 @@ class Entity:
     def rect(self):
         return pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
     
+    def set_action(self, action):
+        if action != self.action:
+            self.action = action
+            self.animation = self.game.animations[self.type + '/' + self.action].copy()
+    
     def update(self, dt):
-        pass
+        if self.animation:
+            self.animation.update(dt)
     
     def render(self, surf, offset=(0, 0)):
         surf.blit(self.img, (self.pos[0] - offset[0], self.pos[1] - offset[1]))
@@ -36,10 +49,7 @@ class PhysicsEntity(Entity):
         self.acceleration = [0, 0]
         self.terminal_velocity = [250, 700]
         self.velocity_reset = [False, True]
-        self.speed = 80
         
-        # this is player specfic
-        self.acceleration[1] = 450
         
         self.collision_directions = { 'up': False, 'down': False, 'right': False, 'left': False}
         
@@ -48,13 +58,7 @@ class PhysicsEntity(Entity):
         
         self.frame_movement[0] += self.velocity[0] * dt
         self.frame_movement[1] += self.velocity[1] * dt
-        
-        # print(self.frame_movement)
-        
-        # this is player specfic
-        self.move(((self.game.movement[1] - self.game.movement[0]) * self.speed, 0), dt)
-        
-        
+                
         self.physics_movement(self.game.tilemap, movement=self.frame_movement)
         
         self.velocity[0] = min(self.velocity[0] + self.acceleration[0] * dt, self.terminal_velocity[0])
@@ -62,9 +66,9 @@ class PhysicsEntity(Entity):
         
         self.frame_movement = [0, 0]
           
-    def move(self, vec, dt):
-        self.frame_movement[0] += vec[0] * dt
-        self.frame_movement[1] += vec[1] * dt
+    def move(self, movement, dt):
+        self.frame_movement[0] += movement[0] * dt
+        self.frame_movement[1] += movement[1] * dt
     
     def physics_movement(self, tilemap, movement=(0, 0)):
         self.collision_directions = { 'up': False, 'down': False, 'right': False, 'left': False}
