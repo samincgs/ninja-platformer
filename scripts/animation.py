@@ -29,7 +29,8 @@ class Animation:
         if self.loop:
             self.frame = (self.frame + dt) % (self.img_duration * len(self.images))
         else:
-            self.frame = min(self.frame + dt, (len(self.images) - 1) * self.img_duration)
+            self.frame += dt
+            self.frame = min(self.frame, (len(self.images) - 1) * self.img_duration)
             if self.frame >= ((len(self.images) - 1) * self.img_duration):
                 self.done = True
 
@@ -39,7 +40,6 @@ class Animations:
         self.animations = {}
         self.generate_anims(ANIMATION_PATH)
      
-    
     def generate_anims(self, path):
         for entity_id in os.listdir(path):
             change_config = False

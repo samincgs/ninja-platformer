@@ -26,7 +26,14 @@ def save_json(path, data):
     f = open(path, 'w')
     json.dump(data, fp=f)
     f.close()
-    
+
+def palette_swap(surf, old_color, new_color):
+    img = surf.copy()
+    surf.set_colorkey(old_color)
+    img.fill(new_color)
+    img.blit(surf, (0, 0))
+    return img.copy()
+
 def normalize(vel, amt, target=0):
     if vel > target:
         return max(vel - amt, target)

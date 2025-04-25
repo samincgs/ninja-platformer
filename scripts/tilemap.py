@@ -24,15 +24,7 @@ class Tilemap:
         self.tilemap = {}
         self.offgrid_tiles = []
 
-    def save_map(self, path):
-        save_json(path, {'tilemap': self.tilemap, 'offgrid': self.offgrid_tiles, 'tile_size': self.tile_size})
-        
-    def load_map(self, path):
-        map_data = load_json(path)
-        
-        self.tilemap = map_data['tilemap']
-        self.offgrid_tiles = map_data['offgrid']
-        self.tile_size = map_data['tile_size']
+    
     
     def collision_test(self, entity_rect, rect_list):
         collision_rects = []
@@ -52,7 +44,43 @@ class Tilemap:
                 if tile['type'] in PHYSICS_TILES:
                     rects.append(pygame.Rect(tile['pos'][0] * self.tile_size, tile['pos'][1] * self.tile_size, self.tile_size, self.tile_size))
         return rects
+    
+    
+    def extract(self, tile_filter, keep=False):
+        tile_list = []
+        
+        for tile in self.offgrid_tiles.copy():
+            match = tile_filter(tile)
+            if match:
+                tile_list.append(tile.copy())
+                if not keep:
+                    self.offgrid_tiles.remove(tile)
                 
+        #grid
+        for tile_loc in self.tilemap.copy():
+            tile = self.tilemap[tile_loc]
+            match = tile_filter(tile)
+            if match:
+                tile_list.append(tile.copy())
+                tile_list[-1]['pos'] = tile_list[-1]['pos'].copy()
+                tile_list[-1]['pos'][0] *= self.tile_size
+                tile_list[-1]['pos'][1] *= self.tile_size
+                if not keep:
+                    del self.tilemap[tile_loc]
+        
+        return tile_list
+                
+                
+    
+    def save_map(self, path):
+        save_json(path, {'tilemap': self.tilemap, 'offgrid': self.offgrid_tiles, 'tile_size': self.tile_size})
+        
+    def load_map(self, path):
+        map_data = load_json(path)
+        
+        self.tilemap = map_data['tilemap']
+        self.offgrid_tiles = map_data['offgrid']
+        self.tile_size = map_data['tile_size']            
     def render(self, surf, offset=(0, 0)):
         # offgrid
         for tile in self.offgrid_tiles:

@@ -71,8 +71,12 @@ class PhysicsEntity(Entity):
         
         self.last_movement = self.frame_movement.copy()
         
-        self.velocity[0] = min(self.velocity[0] + self.acceleration[0] * dt, self.terminal_velocity[0])
-        self.velocity[1] = min(self.velocity[1] + self.acceleration[1] * dt, self.terminal_velocity[1])
+        self.velocity[0] += self.acceleration[0] * dt
+        self.velocity[1] += self.acceleration[1] * dt
+        
+        self.velocity[0] = min(self.velocity[0], self.terminal_velocity[0])
+        self.velocity[1] = min(self.velocity[1], self.terminal_velocity[1])
+        
         self.velocity[0] = self.normalize(self.velocity[0], self.velocity_normalization[0] * dt)
         self.velocity[1] = self.normalize(self.velocity[1], self.velocity_normalization[1] * dt)
                 
