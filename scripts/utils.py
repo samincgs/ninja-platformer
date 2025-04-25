@@ -1,4 +1,5 @@
 import os
+import json
 import pygame
 
 BASE_IMG_PATH = 'data/images/'
@@ -14,3 +15,9 @@ def load_imgs(path, alpha=False, colorkey=(0, 0, 0)):
     for img_name in sorted(os.listdir(BASE_IMG_PATH + path)):
         imgs.append(load_img(path + '/' + img_name, alpha, colorkey))
     return imgs
+
+def read_json(path):
+    f = open(path)
+    data = json.load(fp=f)
+    f.close()
+    return data

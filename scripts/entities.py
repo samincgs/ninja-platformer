@@ -7,7 +7,7 @@ class Entity:
         self.size = size
         self.type = e_type
         
-        self.animation = None
+        self.active_animation = None
         self.action = ''
         
         self.flip = [False, False]
@@ -15,8 +15,8 @@ class Entity:
         
     @property
     def img(self):
-        if self.animation:
-            img = self.animation.img
+        if self.active_animation:
+            img = self.active_animation.img
         if any(self.flip):
             img = pygame.transform.flip(img, self.flip[0], self.flip[1])
         return img
@@ -33,11 +33,11 @@ class Entity:
     def set_action(self, action, force=False):
         if force or action != self.action:
             self.action = action
-            self.animation = self.game.animations[self.type + '/' + self.action].copy()
+            self.active_animation = self.game.animations.new(self.type + '/' + self.action)
     
     def update(self, dt):
-        if self.animation:
-            self.animation.update(dt)
+        if self.active_animation:
+            self.active_animation.update(dt)
     
     def render(self, surf, offset=(0, 0)):
         surf.blit(self.img, (self.pos[0] - offset[0], self.pos[1] - offset[1]))

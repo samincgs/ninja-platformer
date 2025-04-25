@@ -57,6 +57,8 @@ class LevelEditor:
                         self.clicking = True
                     if event.button == 3:
                         self.right_clicking = True
+                    if event.type == 4:
+                        self.tile_group = (self.tile_group - 1) % len(self.assets)
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         self.movement[0] = True

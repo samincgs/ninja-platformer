@@ -4,7 +4,7 @@ import time
 
 from scripts.player import Player
 from scripts.tilemap import Tilemap
-from scripts.animation import Animation
+from scripts.animation import Animations
 from scripts.utils import load_img, load_imgs
 from scripts.clouds import Clouds
 
@@ -28,21 +28,15 @@ class Game:
             'stone': load_imgs('tiles/stone'),
             'decor': load_imgs('tiles/decor'),
             'large_decor': load_imgs('tiles/large_decor'),
-            'player': load_img('entities/player.png'),
+            'player': load_img('entities/player/player.png'),
             'background': load_img('background.png'),
             'clouds': load_imgs('clouds')
         }
         
-        self.animations = {
-            'player/idle': Animation(load_imgs('entities/player/idle'), img_dur=0.12, loop=True),
-            'player/run': Animation(load_imgs('entities/player/run'), img_dur=0.08, loop=True),
-            'player/jump': Animation(load_imgs('entities/player/jump'), loop=False),
-            'player/wall_slide': Animation(load_imgs('entities/player/wall_slide'), loop=False),
-        }
-        
-        
-        self.player = Player(self, (70, 20), self.assets['player'].get_size())
         self.tilemap = Tilemap(self, tile_size=16)
+        self.animations = Animations()
+                
+        self.player = Player(self, (70, 20), self.assets['player'].get_size())
         self.clouds = Clouds(self.assets['clouds'], count=20)
         
         self.input = [False, False]
