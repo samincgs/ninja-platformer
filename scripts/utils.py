@@ -26,3 +26,10 @@ def save_json(path, data):
     f = open(path, 'w')
     json.dump(data, fp=f)
     f.close()
+    
+def normalize(vel, amt, target=0):
+    if vel > target:
+        return max(vel - amt, target)
+    elif vel < target:
+        return min(vel + amt, target)
+    return target

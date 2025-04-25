@@ -1,11 +1,7 @@
 {
   "id": "enemy",
-  "idle": {
-    "img_duration": 0.12,
-    "loop": true
-  },
-  "run": {
-    "img_duration": 0.08,
-    "loop": true
+  "animations": {
+    "idle": { "img_duration": 0.1, "loop": false },
+    "run": { "img_duration": 0.1, "loop": false }
   }
 }

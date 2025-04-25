@@ -45,15 +45,23 @@ class Entity:
 class PhysicsEntity(Entity):
     def __init__(self, game, pos, size, e_type):
         super().__init__(game, pos, size, e_type)
-        self.frame_movement = [0, 0]
+        self.speed = 0
         self.velocity = [0, 0]
-        self.acceleration = [0, 0]
+        self.frame_movement = [0, 0]
         self.last_movement = [0, 0]
+        self.velocity_normalization = [0, 0]
+        self.acceleration = [0, 0]
         self.terminal_velocity = [250, 700]
         self.velocity_reset = [False, True]
         
-        
         self.collision_directions = { 'up': False, 'down': False, 'right': False, 'left': False}
+    
+    def normalize(self, vel, amt, target=0):
+        if vel > target:
+            return max(vel - amt, target)
+        elif vel < target:
+            return min(vel + amt, target)
+        return target
         
     def physics_update(self, dt):        
         self.frame_movement[0] += self.velocity[0] * dt
@@ -61,12 +69,13 @@ class PhysicsEntity(Entity):
                 
         self.physics_movement(self.game.tilemap, movement=self.frame_movement)
         
-        
         self.last_movement = self.frame_movement.copy()
         
         self.velocity[0] = min(self.velocity[0] + self.acceleration[0] * dt, self.terminal_velocity[0])
         self.velocity[1] = min(self.velocity[1] + self.acceleration[1] * dt, self.terminal_velocity[1])
-        
+        self.velocity[0] = self.normalize(self.velocity[0], self.velocity_normalization[0] * dt)
+        self.velocity[1] = self.normalize(self.velocity[1], self.velocity_normalization[1] * dt)
+                
         self.frame_movement = [0, 0]
           
     def move(self, movement, dt):
