@@ -1,6 +1,6 @@
 import os
 
-from .utils import read_json, load_imgs
+from .utils import load_json, load_imgs
 
 ANIMATION_PATH = 'data/images/entities/'
 CONFIG_FILE = 'config.json'
@@ -36,7 +36,7 @@ class Animations:
         self.animations = {}
                 
         for entity_id in os.listdir(ANIMATION_PATH):
-            config = read_json(ANIMATION_PATH + entity_id + '/' + CONFIG_FILE)
+            config = load_json(ANIMATION_PATH + entity_id + '/' + CONFIG_FILE)
             for anim in os.listdir(ANIMATION_PATH + entity_id):
                 full_path = ANIMATION_PATH + entity_id + '/' + anim
                 if os.path.isdir(full_path):

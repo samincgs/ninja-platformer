@@ -16,8 +16,13 @@ def load_imgs(path, alpha=False, colorkey=(0, 0, 0)):
         imgs.append(load_img(path + '/' + img_name, alpha, colorkey))
     return imgs
 
-def read_json(path):
+def load_json(path):
     f = open(path)
     data = json.load(fp=f)
     f.close()
     return data
+
+def save_json(path, data):
+    f = open(path, 'w')
+    json.dump(data, fp=f)
+    f.close()

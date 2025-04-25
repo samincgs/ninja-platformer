@@ -1,4 +1,5 @@
 import pygame
+from .utils import save_json, load_json
 
 SURROUND_POS = [(-1, -1), (0, -1), (1, -1), (1, 0), (0, 0), (-1, 0), (-1, 1), (0, 1), (1, 1)]
 PHYSICS_TILES = {'grass', 'stone'}
@@ -7,16 +8,19 @@ class Tilemap:
     def __init__(self, game, tile_size=16):
         self.game = game
         self.tile_size = tile_size
-        
         self.tilemap = {}
         self.offgrid_tiles = []
+
+    def save_map(self, path):
+        save_json(path, {'tilemap': self.tilemap, 'offgrid': self.offgrid_tiles, 'tile_size': self.tile_size})
         
-        for i in range(8):
-            self.tilemap[str(3 + i) + ';9'] = {'type': 'grass', 'variant': 1, 'pos': (3 + i, 9)}
+    def load_map(self, path):
+        map_data = load_json(path)
         
-        for i in range(5):
-            self.tilemap['9;' + str(5 + i)] = {'type': 'stone', 'variant': 1, 'pos': (9 , 5 + i)}
-            
+        self.tilemap = map_data['tilemap']
+        self.offgrid_tiles = map_data['offgrid']
+        self.tile_size = map_data['tile_size']
+    
     def collision_test(self, entity_rect, rect_list):
         collision_rects = []
         for tile_rect in rect_list:

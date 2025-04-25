@@ -1,9 +1,8 @@
 import pygame
 import sys
-import time
 
 from scripts.tilemap import Tilemap
-from scripts.utils import load_img, load_imgs
+from scripts.utils import load_imgs
 
 RENDER_SCALE = 2
 
@@ -17,9 +16,7 @@ class LevelEditor:
         
         self.clock = pygame.time.Clock()
         
-        
-        self.last_time = time.time()
-        
+                
         self.assets = {
             'grass': load_imgs('tiles/grass'),
             'stone': load_imgs('tiles/stone'),
@@ -29,25 +26,67 @@ class LevelEditor:
         
         self.tilemap = Tilemap(self, tile_size=16)
         
+        try:
+            self.tilemap.load_map('map.json')
+        except FileNotFoundError:
+            pass
+        
         self.tile_list = list(self.assets)
         self.tile_group = 0
         self.tile_variant = 0
+        self.ongrid = True
         
         self.movement = [False, False, False, False]
         self.scroll = [0, 0]
         self.clicking  = False
         self.right_clicking  = False
+        self.shift = False
 
     def run(self):
         while True:
                     
             self.display.fill((0, 0, 0))
             
+            self.scroll[0] += (self.movement[1] - self.movement[0]) * 3
+            self.scroll[1] += (self.movement[3] - self.movement[2]) * 3
+            render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
+            
+            self.tilemap.render_visible(self.display, offset=render_scroll)
+            
             current_tile_img = self.assets[self.tile_list[self.tile_group]][self.tile_variant].copy()
             current_tile_img.set_alpha(130)
             
+            mpos = pygame.mouse.get_pos()
+            mpos = (mpos[0] // RENDER_SCALE, mpos[1] // RENDER_SCALE)
+            tile_pos = (int((mpos[0] + self.scroll[0]) // self.tilemap.tile_size), int((mpos[1] + self.scroll[1]) // self.tilemap.tile_size))
+                        
+            if self.ongrid:
+                self.display.blit(current_tile_img, (tile_pos[0] * self.tilemap.tile_size - self.scroll[0], tile_pos[1] * self.tilemap.tile_size - self.scroll[1]))
+            else:
+                self.display.blit(current_tile_img, mpos)
+            
+            if self.clicking:
+                if self.ongrid:
+                    self.tilemap.tilemap[str(tile_pos[0]) + ';' + str(tile_pos[1])] = {'type': self.tile_list[self.tile_group], 'variant': self.tile_variant, 'pos': tile_pos}
+                else:
+                    world_pos = (mpos[0] + self.scroll[0], mpos[1] + self.scroll[1])
+                    self.tilemap.offgrid_tiles.append({'type': self.tile_list[self.tile_group], 'variant': self.tile_variant, 'pos': world_pos})
+            if self.right_clicking:
+                if self.ongrid:
+                    str_loc = str(tile_pos[0]) + ';' + str(tile_pos[1])
+                    if str_loc in self.tilemap.tilemap:
+                        del self.tilemap.tilemap[str_loc]
+                else:
+                    for tile in self.tilemap.offgrid_tiles.copy():
+                        tile_img = self.assets[tile['type']][tile['variant']]
+                        tile_r = pygame.Rect(tile['pos'][0] - self.scroll[0], tile['pos'][1] - self.scroll[1], tile_img.get_width(), tile_img.get_height())
+                        if tile_r.collidepoint(mpos):
+                            self.tilemap.offgrid_tiles.remove(tile)
+            
             self.display.blit(current_tile_img, (5, 5))
-                                    
+            
+            if not self.ongrid:
+                self.clicking = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -57,26 +96,49 @@ class LevelEditor:
                         self.clicking = True
                     if event.button == 3:
                         self.right_clicking = True
-                    if event.type == 4:
-                        self.tile_group = (self.tile_group - 1) % len(self.assets)
+                    if event.button == 4:
+                        if not self.shift:
+                            self.tile_group = (self.tile_group - 1) % len(self.tile_list)
+                            self.tile_variant = 0
+                        else:
+                            self.tile_variant = (self.tile_variant - 1) % len(self.assets[self.tile_list[self.tile_group]])
+                    if event.button == 5:
+                        if not self.shift:
+                            self.tile_group = (self.tile_group + 1) % len(self.tile_list)
+                            self.tile_variant = 0
+                        else:
+                            self.tile_variant = (self.tile_variant + 1) % len(self.assets[self.tile_list[self.tile_group]])
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if event.button == 1:
+                        self.clicking = False  
+                    if event.button == 3:
+                        self.right_clicking = False  
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
+                    if event.key == pygame.K_a:
                         self.movement[0] = True
-                    if event.key == pygame.K_RIGHT:
+                    if event.key == pygame.K_d:
                         self.movement[1] = True
-                    if event.key == pygame.K_UP:
+                    if event.key == pygame.K_w:
                         self.movement[2] = True
-                    if event.key == pygame.K_DOWN:
+                    if event.key == pygame.K_s:
                         self.movement[3] = True
+                    if event.key == pygame.K_LSHIFT:
+                        self.shift = True
+                    if event.key == pygame.K_g:
+                        self.ongrid = not self.ongrid
+                    if event.key == pygame.K_o:
+                        self.tilemap.save_map('map.json')
                 if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_LEFT:
+                    if event.key == pygame.K_a:
                         self.movement[0] = False
-                    if event.key == pygame.K_RIGHT:
+                    if event.key == pygame.K_d:
                         self.movement[1] = False
-                    if event.key == pygame.K_UP:
+                    if event.key == pygame.K_w:
                         self.movement[2] = False
-                    if event.key == pygame.K_DOWN:
+                    if event.key == pygame.K_s:
                         self.movement[3] = False
+                    if event.key == pygame.K_LSHIFT:
+                        self.shift = False
                     
                     
             # print(self.clock.get_fps())
