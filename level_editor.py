@@ -22,6 +22,7 @@ class LevelEditor:
             'stone': load_imgs('tiles/stone'),
             'decor': load_imgs('tiles/decor'),
             'large_decor': load_imgs('tiles/large_decor'),
+            'spawners': load_imgs('tiles/spawners'),
         }
         
         self.tilemap = Tilemap(self, tile_size=16)

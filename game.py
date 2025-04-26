@@ -4,6 +4,7 @@ import sys
 import time
 import random
 
+from scripts.enemy import Enemy
 from scripts.player import Player
 from scripts.tilemap import Tilemap
 from scripts.animation import Animations
@@ -20,7 +21,6 @@ class Game:
         self.display = pygame.Surface((320, 240))
         
         self.clock = pygame.time.Clock()
-        self.master_clock = 0
                 
         self.dt = 0.01
         self.last_time = time.time()
@@ -30,12 +30,13 @@ class Game:
             'stone': load_imgs('tiles/stone'),
             'decor': load_imgs('tiles/decor'),
             'large_decor': load_imgs('tiles/large_decor'),
+            'spawners': load_imgs('tiles/spawners'),
             'player': load_img('entities/player/player.png'),
             'background': load_img('background.png'),
             'clouds': load_imgs('clouds'),
-            'particles/leaf': load_imgs('particles/leaf'),
-            'particles/particle': load_imgs('particles/particle'),
         }
+        
+        self.particle_assets = {'leaf': load_imgs('particles/leaf'), 'particle': load_imgs('particles/particle')}
         
         self.tilemap = Tilemap(self, tile_size=16)
         self.animations = Animations()
@@ -45,23 +46,31 @@ class Game:
         self.player = Player(self, (70, 20), self.assets['player'].get_size())
         self.clouds = Clouds(self.assets['clouds'], count=16)
         
-        self.input = {'left': False, 'right': False, 'jump': False}
+        self.input = {'left': False, 'right': False, 'jump': False, 'dash': False}
         self.scroll = [0, 0]
         
         self.particles = []
         self.leaf_spawners = []
+        self.enemies = []
         
         tree_filter = lambda x: x['type'] == 'large_decor' and x['variant'] == 2
-        for tree in self.tilemap.extract(tree_filter, keep=True):
+        for tree in self.tilemap.tile_filter(tree_filter, keep=True):
             self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13))
+            
+        spawner_filter = lambda x: x['type'] == 'spawners' and x['variant'] in {0, 1}
+        for spawner in self.tilemap.tile_filter(spawner_filter):
+            if spawner['variant'] == 0:
+                self.player.pos = spawner['pos']
+            else:
+                self.enemies.append(Enemy(self, spawner['pos'], self.assets['player'].get_size()))
+            
+        
 
     def run(self):
         while True:
             self.dt = time.time() - self.last_time
             self.last_time = time.time()
-            
-            self.master_clock += self.dt
-                        
+                                    
             self.display.blit(self.assets['background'], (0, 0))
             
             camera_speed = 0.4
@@ -79,6 +88,10 @@ class Game:
             
             self.tilemap.render_visible(self.display, offset=render_scroll)
             
+            for enemy in self.enemies.copy():
+                enemy.update(self.dt)
+                enemy.render(self.display, offset=render_scroll)
+                
             self.player.update(self.dt)
             self.player.render(self.display, offset=render_scroll)
             
@@ -92,6 +105,7 @@ class Game:
                     self.particles.remove(particle)
             
             self.input['jump'] = False
+            self.input['dash'] = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -103,6 +117,8 @@ class Game:
                         self.input['right'] = True
                     if event.key == pygame.K_UP:
                         self.input['jump'] = True
+                    if event.key == pygame.K_x:
+                        self.input['dash'] = True
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:
                         self.input['left'] = False

@@ -7,13 +7,12 @@ ANIMATION_PATH = 'data/images/entities/'
 CONFIG_FILE = 'config.json'
 
 class Animation:
-    def __init__(self, anim_id, images, anim_config):
-        self.id = anim_id[0]
-        self.anim_type = anim_id[1]
+    def __init__(self, anim_state, images, anim_config):
+        self.anim_state = anim_state
         self.images = images
         self.config = anim_config
-        self.img_duration = self.config['animations'][self.anim_type]['img_duration']
-        self.loop = self.config['animations'][self.anim_type]['loop']
+        self.img_duration = self.config[anim_state]['img_duration']
+        self.loop = self.config[anim_state]['loop']
         
         self.done = False
         self.frame = 0
@@ -23,7 +22,7 @@ class Animation:
         return self.images[int(self.frame / self.img_duration)]
     
     def copy(self):
-        return Animation((self.id, self.anim_type), self.images, self.config)
+        return Animation(self.anim_state, self.images, self.config)
     
     def update(self, dt):
         if self.loop:
@@ -47,14 +46,14 @@ class Animations:
                 config = load_json(path + entity_id + '/' + CONFIG_FILE)
             except FileNotFoundError:
                 change_config = True
-                config = {'id': entity_id, "animations": {}}
+                config = {}
                 
             for anim in os.listdir(path + entity_id):
                 full_path = path + entity_id + '/' + anim
                 if os.path.isdir(full_path):
-                    if not config['animations'] or not anim in config['animations']:
-                        config['animations'][anim] = {'img_duration': 0.1, 'loop': False}
-                    self.animations[entity_id + '/' + anim] = Animation(anim_id=(entity_id, anim), images=load_imgs(f'entities/{entity_id}/{anim}', colorkey=COLORKEY), anim_config=config)
+                    if not config or anim not in config:
+                        config[anim] = {'img_duration': 0.1, 'loop': False}
+                    self.animations[entity_id + '/' + anim] = Animation(anim_state=anim, images=load_imgs(f'entities/{entity_id}/{anim}', colorkey=COLORKEY), anim_config=config)
             
             if change_config:
                 save_json(path=path + entity_id + '/' + CONFIG_FILE, data=config)

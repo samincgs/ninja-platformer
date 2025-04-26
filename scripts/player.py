@@ -1,6 +1,9 @@
 import pygame
+import math
+import random
 
 from .entities import PhysicsEntity
+from .particles import Particle
 
 
 class Player(PhysicsEntity):
@@ -8,10 +11,12 @@ class Player(PhysicsEntity):
         super().__init__(game, pos, size, 'player')
         self.speed = 80
         self.acceleration[1] = 450
+        self.velocity_normalization[0] = 600
+        
         self.air_time = 0
         self.jumps = 1
         self.wall_slide = False
-        self.velocity_normalization[0] = 600
+        self.dashing = 0
         
         self.anim_offset = (-3, -3)
         
@@ -27,15 +32,26 @@ class Player(PhysicsEntity):
             self.air_time = 0.1
             self.jumps = max(self.jumps - 1, 0)
             
-        elif self.jumps:
+        elif self.jumps and self.air_time < 0.1:
             self.velocity[1] = -180
             self.jumps -= 1
             self.air_time = 0.1
+    
+    def dash(self):
+        if not self.dashing:
+            if self.flip[0]:
+                self.dashing = -60
+            else:
+                self.dashing = 60
+            
         
     def update(self, dt):
         super().update(dt)
         
-        self.air_time += dt
+        self.air_time += dt 
+        
+        self.move(((self.game.input['right'] - self.game.input['left']) * self.speed, 0), dt)
+        
         self.wall_slide = False
         if (self.collision_directions['right'] or self.collision_directions['left']) and self.air_time >= 0.1:
             self.wall_slide = True
@@ -45,10 +61,29 @@ class Player(PhysicsEntity):
             else:
                 self.flip[0] = True
             self.set_action('wall_slide')
+
+            
+        if int(abs(self.dashing)) in {50, 60}:
+            for i in range(12):
+                angle = random.random() * math.pi * 2
+                speed = random.random() * 40 + 20
+                pvelocity = [math.cos(angle) * speed, math.sin(angle) * speed]
+                self.game.particles.append(Particle(self.game, 'particle', self.rect.center, pvelocity, random.randint(0, 2), decay_rate=5, custom_color=(20, 16, 42)))
+        if self.dashing > 0:
+            self.dashing = max(0, self.dashing - dt * 60)
+        if self.dashing < 0:
+            self.dashing = min(0, self.dashing + dt * 60)
+        if abs(self.dashing) > 50:
+            self.velocity[0] = abs(self.dashing) / self.dashing * 480
+            if int(abs(self.dashing)) == 50:
+                self.velocity[0] *= 0.1 
+            pvelocity = [abs(self.dashing) / self.dashing * random.random() * 30, 0]
+            self.game.particles.append(Particle(self.game, 'particle', self.rect.center, pvelocity, random.randint(0, 2), decay_rate=5, custom_color=(20, 16, 32)))
         
-        self.move(((self.game.input['right'] - self.game.input['left']) * self.speed, 0), dt)
         if self.game.input['jump']:
             self.jump()
+        if self.game.input['dash']:
+            self.dash()
         
         if self.frame_movement[0] > 0:
             self.flip[0] = False
@@ -71,6 +106,10 @@ class Player(PhysicsEntity):
             
 
     def render(self, surf, offset=(0, 0)):
-        surf.blit(self.img, (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1]))
+        if abs(self.dashing) <= 50:
+            surf.blit(self.img, (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1]))
+        
+            
+            
         # debug
         # pygame.draw.rect(surf, (255, 0, 0), pygame.Rect(self.pos[0] - offset[0], self.pos[1] - offset[1], *self.size))

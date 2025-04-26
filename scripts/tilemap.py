@@ -46,11 +46,19 @@ class Tilemap:
         return rects
     
     
-    def extract(self, tile_filter, keep=False):
+    # pos in pixels 
+    def solid_check(self, pos):
+        tile_loc = str(int(pos[0] // self.tile_size)) + ';' + str(int(pos[1] // self.tile_size))
+        if tile_loc in self.tilemap:
+            if self.tilemap[tile_loc]['type'] in PHYSICS_TILES:
+                return self.tilemap[tile_loc]
+        
+    
+    def tile_filter(self, filter_func, keep=False):
         tile_list = []
         
         for tile in self.offgrid_tiles.copy():
-            match = tile_filter(tile)
+            match = filter_func(tile)
             if match:
                 tile_list.append(tile.copy())
                 if not keep:
@@ -59,7 +67,7 @@ class Tilemap:
         #grid
         for tile_loc in self.tilemap.copy():
             tile = self.tilemap[tile_loc]
-            match = tile_filter(tile)
+            match = filter_func(tile)
             if match:
                 tile_list.append(tile.copy())
                 tile_list[-1]['pos'] = tile_list[-1]['pos'].copy()

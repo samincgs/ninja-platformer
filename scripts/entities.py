@@ -11,8 +11,7 @@ class Entity:
         self.action = ''
         
         self.flip = [False, False]
-        
-        
+                
     @property
     def img(self):
         if self.active_animation:

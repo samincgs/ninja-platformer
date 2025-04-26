@@ -10,7 +10,7 @@ class Particle:
         self.decay_rate = decay_rate
         self.custom_color = custom_color
         
-        self.images = self.game.assets['particles/' + p_type]
+        self.images = self.game.particle_assets[self.type]
         
     def update(self, dt):
         kill = False
@@ -22,8 +22,7 @@ class Particle:
         self.frame = min(self.frame, len(self.images) - 1)
         if self.frame >= len(self.images) - 1:
             kill = True
-            
-            
+        
         return kill
     
     
@@ -35,5 +34,6 @@ class Particle:
             else:
                 old_color = (0, 0, 0)
             img = palette_swap(img, old_color, self.custom_color)
+            img.set_colorkey((0, 0, 0))
         surf.blit(img, (self.pos[0] - offset[0] - img.get_width() / 2, self.pos[1] - offset[1] - img.get_width() / 2))
         
