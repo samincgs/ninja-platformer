@@ -49,6 +49,9 @@ class Player(PhysicsEntity):
         super().update(dt)
         
         self.air_time += dt 
+        
+        if self.air_time > 2:
+            self.game.dead = 1
 
         self.move(((self.game.input['right'] - self.game.input['left']) * self.speed, 0), dt)
                 
@@ -94,8 +97,10 @@ class Player(PhysicsEntity):
         wall_right = (self.rect.right + 1, self.rect.centery)
         if self.game.tilemap.solid_check(wall_left if self.flip[0] else wall_right) and self.air_time >= 0.1:
             self.wall_slide = True
+            self.air_time = 0.1
             self.velocity[1] = min(self.velocity[1], 30)
             self.set_action('wall_slide')
+        
 
         if self.collision_directions['down']:
             self.air_time = 0

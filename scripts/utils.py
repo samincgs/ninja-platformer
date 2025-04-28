@@ -1,6 +1,6 @@
+import pygame
 import os
 import json
-import pygame
 
 BASE_IMG_PATH = 'data/images/'
 

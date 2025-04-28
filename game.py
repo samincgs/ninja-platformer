@@ -72,7 +72,6 @@ class Game:
             self.dt = min(max(0.00001, self.dt), 0.1)
             self.last_time = time.time()
             
-            print(self.dt)
             if self.dead:
                 self.dead += self.dt
                 if self.dead > 0.6:
@@ -119,7 +118,7 @@ class Game:
                     self.projectiles.remove(projectile)
                 elif abs(self.player.dashing) < 50:
                     if self.player.rect.collidepoint(projectile[0]): 
-                        self.dead += self.dt
+                        self.dead = 1
                         self.projectiles.remove(projectile)
                         for i in range(30):
                             angle = random.random() * math.pi * 2
