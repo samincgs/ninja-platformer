@@ -32,7 +32,7 @@ class Player(PhysicsEntity):
             self.air_time = 0.1
             self.jumps = max(self.jumps - 1, 0)
             
-        elif self.jumps and self.air_time < 0.1:
+        elif self.jumps and self.air_time <= 0.1:
             self.velocity[1] = -180
             self.jumps -= 1
             self.air_time = 0.1
@@ -49,20 +49,9 @@ class Player(PhysicsEntity):
         super().update(dt)
         
         self.air_time += dt 
-        
-        self.move(((self.game.input['right'] - self.game.input['left']) * self.speed, 0), dt)
-        
-        self.wall_slide = False
-        if (self.collision_directions['right'] or self.collision_directions['left']) and self.air_time >= 0.1:
-            self.wall_slide = True
-            self.velocity[1] = min(self.velocity[1], 30)
-            if self.collision_directions['right']:
-                self.flip[0] = False
-            else:
-                self.flip[0] = True
-            self.set_action('wall_slide')
 
-            
+        self.move(((self.game.input['right'] - self.game.input['left']) * self.speed, 0), dt)
+                
         if int(abs(self.dashing)) in {50, 60}:
             for i in range(12):
                 angle = random.random() * math.pi * 2
@@ -78,7 +67,8 @@ class Player(PhysicsEntity):
             if int(abs(self.dashing)) == 50:
                 self.velocity[0] *= 0.1 
             pvelocity = [abs(self.dashing) / self.dashing * random.random() * 30, 0]
-            self.game.particles.append(Particle(self.game, 'particle', self.rect.center, pvelocity, random.randint(0, 2), decay_rate=5, custom_color=(20, 16, 32)))
+            for i in range(8):
+                self.game.particles.append(Particle(self.game, 'particle', self.rect.center, pvelocity, decay_rate=4, custom_color=(20, 16, 32), frame=random.randint(1, 3)))
         
         if self.game.input['jump']:
             self.jump()
@@ -90,6 +80,7 @@ class Player(PhysicsEntity):
         if self.frame_movement[0] < 0:
             self.flip[0] = True
         
+        
         if not self.wall_slide:
             if self.air_time >= 0.1:
                 self.set_action('jump')
@@ -97,13 +88,20 @@ class Player(PhysicsEntity):
                 self.set_action('run')
             else:
                 self.set_action('idle')
-            
+        
+        self.wall_slide = False  
+        wall_left = (self.rect.left - 1, self.rect.centery)
+        wall_right = (self.rect.right + 1, self.rect.centery)
+        if self.game.tilemap.solid_check(wall_left if self.flip[0] else wall_right) and self.air_time >= 0.1:
+            self.wall_slide = True
+            self.velocity[1] = min(self.velocity[1], 30)
+            self.set_action('wall_slide')
+
         if self.collision_directions['down']:
             self.air_time = 0
             self.jumps = 1
-        
+
         self.physics_update(dt)
-            
 
     def render(self, surf, offset=(0, 0)):
         if abs(self.dashing) <= 50:

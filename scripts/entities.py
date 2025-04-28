@@ -1,5 +1,7 @@
 import pygame
 
+from .utils import normalize
+
 class Entity:
     def __init__(self, game, pos, size, e_type):
         self.game = game
@@ -55,13 +57,6 @@ class PhysicsEntity(Entity):
         
         self.collision_directions = { 'up': False, 'down': False, 'right': False, 'left': False}
     
-    def normalize(self, vel, amt, target=0):
-        if vel > target:
-            return max(vel - amt, target)
-        elif vel < target:
-            return min(vel + amt, target)
-        return target
-        
     def physics_update(self, dt):        
         self.frame_movement[0] += self.velocity[0] * dt
         self.frame_movement[1] += self.velocity[1] * dt
@@ -76,11 +71,11 @@ class PhysicsEntity(Entity):
         self.velocity[0] = min(self.velocity[0], self.terminal_velocity[0])
         self.velocity[1] = min(self.velocity[1], self.terminal_velocity[1])
         
-        self.velocity[0] = self.normalize(self.velocity[0], self.velocity_normalization[0] * dt)
-        self.velocity[1] = self.normalize(self.velocity[1], self.velocity_normalization[1] * dt)
+        self.velocity[0] = normalize(self.velocity[0], self.velocity_normalization[0] * dt)
+        self.velocity[1] = normalize(self.velocity[1], self.velocity_normalization[1] * dt)
                 
         self.frame_movement = [0, 0]
-          
+           
     def move(self, movement, dt):
         self.frame_movement[0] += movement[0] * dt
         self.frame_movement[1] += movement[1] * dt
@@ -120,4 +115,5 @@ class PhysicsEntity(Entity):
                     self.velocity[1] = 0
                 self.pos[1] = entity_rect.y
         
+
             

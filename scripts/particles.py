@@ -19,7 +19,7 @@ class Particle:
         self.pos[1] += self.velocity[1] * dt
         
         self.frame += self.decay_rate * dt
-        self.frame = min(self.frame, len(self.images) - 1)
+        
         if self.frame >= len(self.images) - 1:
             kill = True
         
@@ -35,5 +35,6 @@ class Particle:
                 old_color = (0, 0, 0)
             img = palette_swap(img, old_color, self.custom_color)
             img.set_colorkey((0, 0, 0))
+            
         surf.blit(img, (self.pos[0] - offset[0] - img.get_width() / 2, self.pos[1] - offset[1] - img.get_width() / 2))
         
