@@ -1,0 +1,4 @@
+{
+  "idle": { "img_duration": 0.15, "loop": true },
+  "run": { "img_duration": 0.1, "loop": true }
+}

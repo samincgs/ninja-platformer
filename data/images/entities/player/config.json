@@ -1,0 +1,7 @@
+{
+  "idle": { "img_duration": 0.1, "loop": true },
+  "jump": { "img_duration": 0.1, "loop": false },
+  "run": { "img_duration": 0.07, "loop": true },
+  "slide": { "img_duration": 0.1, "loop": false },
+  "wall_slide": { "img_duration": 0.1, "loop": true }
+}

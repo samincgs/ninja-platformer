@@ -1,40 +1,48 @@
-import pygame, os 
-BASE_IMG_PATH = 'data/images/'
-BASE_SOUND_PATH = 'data/sfx/'
+import pygame
+import os
+import json
 
-def load_image(path):
-    img = pygame.image.load(BASE_IMG_PATH + path).convert()
-    img.set_colorkey((0, 0, 0))
+BASE_IMG_PATH = 'data/images/'
+
+def load_img(path, alpha=False, colorkey=(0, 0, 0)):
+    img = pygame.image.load(BASE_IMG_PATH + path).convert() if not alpha else pygame.image.load(path).convert_alpha()
+    if colorkey:
+        img.set_colorkey(colorkey)
     return img
 
-def load_images(path):
-    images = []
+def load_imgs(path, alpha=False, colorkey=(0, 0, 0)):
+    imgs = []
     for img_name in sorted(os.listdir(BASE_IMG_PATH + path)):
-        images.append(load_image(path + '/' + img_name))
-    return images
+        imgs.append(load_img(path + '/' + img_name, alpha, colorkey))
+    return imgs
 
-def load_sound(sound):
-    return pygame.mixer.Sound(BASE_SOUND_PATH + sound + '.wav')
-    
+def load_dir(path, alpha=False, colorkey=(0, 0, 0)):
+    imgs = {}
+    for img_name in sorted(os.listdir(BASE_IMG_PATH + path)):
+        imgs[img_name] = load_imgs(path + '/' + img_name, alpha=alpha, colorkey=colorkey)
+    return imgs
+            
+def load_json(path):
+    f = open(path)
+    data = json.load(fp=f)
+    f.close()
+    return data
 
-class Animation:
-    def __init__(self, images, img_dur=5, loop=True):
-        self.images = images
-        self.img_duration = img_dur
-        self.loop = loop
-        self.done = False
-        self.frame = 0
-        
-    def copy(self):
-        return Animation(self.images, self.img_duration, self.loop)
-    
-    def update(self):
-        if self.loop:
-            self.frame = (self.frame + 1) % (self.img_duration * len(self.images))
-        else:
-            self.frame = min(self.frame + 1, self.img_duration * len(self.images) - 1)
-            if self.frame >= self.img_duration * len(self.images) - 1:
-                self.done = True
-    
-    def img(self):
-        return self.images[int(self.frame / self.img_duration)]
+def save_json(path, data):
+    f = open(path, 'w')
+    json.dump(data, fp=f)
+    f.close()
+
+def palette_swap(surf, old_color, new_color):
+    img = surf.copy()
+    surf.set_colorkey(old_color)
+    img.fill(new_color)
+    img.blit(surf, (0, 0))
+    return img.copy()
+
+def normalize(vel, amt, target=0):
+    if vel > target:
+        return max(vel - amt, target)
+    elif vel < target:
+        return min(vel + amt, target)
+    return target
