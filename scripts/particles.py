@@ -1,7 +1,7 @@
 from .utils import palette_swap
 
 class Particle:
-    def __init__(self, game, p_type, pos, velocity=[0, 0], frame=0, decay_rate=20, custom_color=None):
+    def __init__(self, game, p_type, pos, velocity=[0, 0], frame=0, decay_rate=5, custom_color=None):
         self.game = game
         self.type = p_type
         self.pos = list(pos)

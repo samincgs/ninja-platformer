@@ -12,6 +12,7 @@ class Player(PhysicsEntity):
         self.speed = 80
         self.acceleration[1] = 450
         self.velocity_normalization[0] = 600
+        self.velocity_reset[1] = True
         
         self.air_time = 0
         self.jumps = 1
@@ -51,7 +52,9 @@ class Player(PhysicsEntity):
         self.air_time += dt 
         
         if self.air_time > 2:
-            self.game.dead = 1
+            self.game.dead += dt
+            self.game.screenshake = max(16, self.game.screenshake)
+            self.air_time = 0
 
         self.move(((self.game.input['right'] - self.game.input['left']) * self.speed, 0), dt)
                 
@@ -69,9 +72,9 @@ class Player(PhysicsEntity):
             self.velocity[0] = abs(self.dashing) / self.dashing * 480
             if int(abs(self.dashing)) == 50:
                 self.velocity[0] *= 0.1 
-            pvelocity = [abs(self.dashing) / self.dashing * random.random() * 30, 0]
-            for i in range(8):
-                self.game.particles.append(Particle(self.game, 'particle', self.rect.center, pvelocity, decay_rate=4, custom_color=(20, 16, 32), frame=random.randint(1, 3)))
+            for i in range(6):
+                pvelocity = [abs(self.dashing) / self.dashing * random.random() * 30, 0]
+                self.game.particles.append(Particle(self.game, 'particle', self.rect.center, pvelocity, decay_rate=5, custom_color=(20, 16, 32), frame=random.randint(1, 3)))
         
         if self.game.input['jump']:
             self.jump()

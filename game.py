@@ -26,8 +26,10 @@ class Game:
         self.dt = 0.01
         self.last_time = time.time()
                 
-        self.assets = load_dir('tiles')
+        self.assets = {}
+        self.assets.update(load_dir('tiles'))
         self.assets.update({'clouds': load_imgs('clouds'), 'background': load_img('background.png'), 'gun': load_img('gun.png'), 'projectile': load_img('projectile.png')})
+        
         self.particle_assets = load_dir('particles')
         
         
@@ -40,6 +42,8 @@ class Game:
         self.input = {'left': False, 'right': False, 'jump': False, 'dash': False}
         
         self.load_level(0)
+        
+        self.screenshake = 0
         
         
     
@@ -71,6 +75,8 @@ class Game:
             self.dt = time.time() - self.last_time
             self.dt = min(max(0.00001, self.dt), 0.1)
             self.last_time = time.time()
+            
+            self.screenshake = max(0, self.screenshake - self.dt * 30)
             
             if self.dead:
                 self.dead += self.dt
@@ -118,7 +124,8 @@ class Game:
                     self.projectiles.remove(projectile)
                 elif abs(self.player.dashing) < 50:
                     if self.player.rect.collidepoint(projectile[0]): 
-                        self.dead = 1
+                        self.screenshake = max(16, self.screenshake)
+                        self.dead += self.dt
                         self.projectiles.remove(projectile)
                         for i in range(30):
                             angle = random.random() * math.pi * 2
@@ -164,7 +171,10 @@ class Game:
                     
                     
             # print(self.clock.get_fps())
-            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
+            
+            screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2, random.random() * self.screenshake - self.screenshake / 2)
+            print(screenshake_offset)
+            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), screenshake_offset)
             pygame.display.flip()
             self.clock.tick(60)
             

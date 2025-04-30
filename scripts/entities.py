@@ -53,7 +53,7 @@ class PhysicsEntity(Entity):
         self.velocity_normalization = [0, 0]
         self.acceleration = [0, 0]
         self.terminal_velocity = [250, 700]
-        self.velocity_reset = [False, True]
+        self.velocity_reset = [False, False]
         
         self.collision_directions = { 'up': False, 'down': False, 'right': False, 'left': False}
     
