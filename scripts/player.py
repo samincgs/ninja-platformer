@@ -32,11 +32,13 @@ class Player(PhysicsEntity):
             self.velocity[1] = -150
             self.air_time = 0.1
             self.jumps = max(self.jumps - 1, 0)
+            self.game.sfx['jump'].play()
             
         elif self.jumps and self.air_time <= 0.1:
             self.velocity[1] = -200
             self.jumps -= 1
             self.air_time = 0.1
+            self.game.sfx['jump'].play()
     
     def dash(self):
         if not self.dashing:
@@ -44,6 +46,7 @@ class Player(PhysicsEntity):
                 self.dashing = -60
             else:
                 self.dashing = 60
+            self.game.sfx['dash'].play()
             
         
     def update(self, dt):
