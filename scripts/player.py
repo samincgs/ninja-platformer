@@ -34,7 +34,7 @@ class Player(PhysicsEntity):
             self.jumps = max(self.jumps - 1, 0)
             
         elif self.jumps and self.air_time <= 0.1:
-            self.velocity[1] = -180
+            self.velocity[1] = -200
             self.jumps -= 1
             self.air_time = 0.1
     
@@ -53,7 +53,7 @@ class Player(PhysicsEntity):
         
         if self.air_time > 2:
             self.game.dead += dt
-            self.game.screenshake = max(16, self.game.screenshake)
+            self.game.screenshake = max(0.4, self.game.screenshake)
             self.air_time = 0
 
         self.move(((self.game.input['right'] - self.game.input['left']) * self.speed, 0), dt)
@@ -70,7 +70,7 @@ class Player(PhysicsEntity):
             self.dashing = min(0, self.dashing + dt * 60)
         if abs(self.dashing) > 50:
             self.velocity[0] = abs(self.dashing) / self.dashing * 480
-            if int(abs(self.dashing)) == 50:
+            if int(abs(self.dashing)) == 50: #FIX
                 self.velocity[0] *= 0.1 
             for i in range(6):
                 pvelocity = [abs(self.dashing) / self.dashing * random.random() * 30, 0]

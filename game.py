@@ -1,4 +1,5 @@
 import pygame
+import os
 import math
 import sys
 import time
@@ -19,7 +20,8 @@ class Game:
 
         pygame.display.set_caption('Ninja Platformer')
         self.screen = pygame.display.set_mode((640, 480))
-        self.display = pygame.Surface((320, 240))
+        self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
+        self.mask_display = pygame.Surface(self.display.get_size()) # does not have an outline
         
         self.clock = pygame.time.Clock()
                 
@@ -41,23 +43,24 @@ class Game:
                 
         self.input = {'left': False, 'right': False, 'jump': False, 'dash': False}
         
-        self.load_level(0)
+        self.level = 0
+        self.load_level(self.level)
         
         self.screenshake = 0
         
-        
-    
     def load_level(self, map_id):
-        self.tilemap.load_map('data/maps/' + str(map_id) + '.json')
         
         self.dead = 0
         self.scroll = [0, 0]
+        self.transition = -0.5
         
         self.particles = []
         self.projectiles = []
         self.leaf_spawners = []
         self.enemies = []
         self.sparks = []
+        
+        self.tilemap.load_map('data/maps/' + str(map_id) + '.json')
         
         tree_filter = lambda x: x['type'] == 'large_decor' and x['variant'] == 2
         for tree in self.tilemap.tile_filter(tree_filter, keep=True):
@@ -72,18 +75,32 @@ class Game:
             
     def run(self):
         while True:
+            
             self.dt = time.time() - self.last_time
             self.dt = min(max(0.00001, self.dt), 0.1)
             self.last_time = time.time()
             
-            self.screenshake = max(0, self.screenshake - self.dt * 30)
+            self.screenshake = max(0, self.screenshake - self.dt)
             
+            if not len(self.enemies):
+                self.transition = min(self.transition + self.dt, 0.5)
+                if self.transition >= 0.5:
+                    self.level = min(self.level + 1, len(os.listdir('data/maps/')) - 1)
+                    self.load_level(self.level)
+            if self.transition < 0:
+                self.transition = min(self.transition + self.dt, 0)
+
+
             if self.dead:
                 self.dead += self.dt
+                if self.dead >= 0.1:
+                    self.transition += self.dt
                 if self.dead > 0.6:
-                    self.load_level(0)              
+                    self.load_level(self.level)              
             
-            self.display.blit(self.assets['background'], (0, 0))
+            
+            self.display.fill((0, 0, 0, 0))
+            self.mask_display.blit(self.assets['background'], (0, 0))
             
             camera_speed = 0.4
             self.scroll[0] += (self.player.rect.center[0] - self.display.get_width() // 2 - self.scroll[0]) / (camera_speed / self.dt)
@@ -124,7 +141,7 @@ class Game:
                     self.projectiles.remove(projectile)
                 elif abs(self.player.dashing) < 50:
                     if self.player.rect.collidepoint(projectile[0]): 
-                        self.screenshake = max(16, self.screenshake)
+                        self.screenshake = max(0.4, self.screenshake)
                         self.dead += self.dt
                         self.projectiles.remove(projectile)
                         for i in range(30):
@@ -139,6 +156,8 @@ class Game:
                 spark.render(self.display, offset=render_scroll)
                 if kill:
                     self.sparks.remove(spark)
+            
+            main_display_mask = pygame.mask.from_surface(self.display)
             
             for particle in self.particles.copy():
                 kill = particle.update(self.dt)
@@ -172,8 +191,13 @@ class Game:
                     
             # print(self.clock.get_fps())
             
-            screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2, random.random() * self.screenshake - self.screenshake / 2)
-            print(screenshake_offset)
+            if self.transition:
+                transition_surf = pygame.Surface(self.display.get_size())
+                pygame.draw.circle(transition_surf, (255, 255, 255), (self.display.get_width() // 2, self.display.get_height() // 2), (0.5 - abs(self.transition)) * 480)
+                transition_surf.set_colorkey((255, 255, 255))
+                self.display.blit(transition_surf, (0, 0))
+            
+            screenshake_offset = (random.random() * self.screenshake * 30 - self.screenshake * 30 / 2, random.random() * self.screenshake * 30 - self.screenshake * 30 / 2)
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), screenshake_offset)
             pygame.display.flip()
             self.clock.tick(60)
